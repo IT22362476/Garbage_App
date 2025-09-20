@@ -23,11 +23,20 @@ function Register() {
     console.log(registerValues);
 
     try {
+      // Fetch CSRF token from backend
+      const csrfRes = await fetch("http://localhost:8070/user/csrf-token", {
+        credentials: "include"
+      });
+      const csrfData = await csrfRes.json();
+      const csrfToken = csrfData.csrfToken;
+
       const response = await fetch("http://localhost:8070/user/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "CSRF-Token": csrfToken
         },
+        credentials: "include",
         body: JSON.stringify(registerValues),
       });
 

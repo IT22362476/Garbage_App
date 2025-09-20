@@ -4,6 +4,11 @@ const { body, param, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 let User = require("../models/User");
 
+// FIX: Added endpoint to provide CSRF token to frontend
+router.get('/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
 // FIX: Added rate limiting to prevent brute-force attacks on login and registration
 const rateLimit = require('express-rate-limit');
 const authLimiter = rateLimit({

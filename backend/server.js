@@ -22,7 +22,12 @@ const PORT = process.env.PORT || 8070;
 
 
 // Middleware
-app.use(cors());
+// FIX: Configure CORS to allow credentials and restrict origin for CSRF protection
+const allowedOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+app.use(cors({
+    origin: allowedOrigin,
+    credentials: true,
+}));
 app.use(bodyParser.json());
 
 // CSRF error handler
