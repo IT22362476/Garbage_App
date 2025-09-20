@@ -5,10 +5,18 @@ const cors = require('cors');
 const dotenv = require("dotenv");
 const app = express();
 
+
 // FIX: Add helmet middleware to emit standard security headers
 // Helmet helps secure Express apps by setting various HTTP headers
 const helmet = require('helmet');
 app.use(helmet());
+
+// FIX: Added CSRF protection middleware using csurf
+const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
+app.use(cookieParser());
+app.use(csurf({ cookie: { httpOnly: true, secure: process.env.NODE_ENV === 'production' } }));
+
 dotenv.config(); // Load environment variables
 const PORT = process.env.PORT || 8070;
 
@@ -16,6 +24,14 @@ const PORT = process.env.PORT || 8070;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// CSRF error handler
+app.use((err, req, res, next) => {
+    if (err.code !== 'EBADCSRFTOKEN') return next(err);
+    // FIX: CSRF token errors are handled here
+    res.status(403).json({ error: 'Invalid CSRF token' });
+});
+
 module.exports = app;
 
 

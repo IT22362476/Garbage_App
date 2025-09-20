@@ -4,6 +4,14 @@ const { body, param, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 let User = require("../models/User");
 
+// FIX: Added rate limiting to prevent brute-force attacks on login and registration
+const rateLimit = require('express-rate-limit');
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: 'Too many attempts from this IP, please try again later.'
+});
+
 // router.route("/add").post((req, res) => {
 //   const name = req.body.name;
 //   const address = req.body.address;
@@ -28,7 +36,7 @@ let User = require("../models/User");
 // });
 
 // User login
-router.post("/login", async (req, res) => {
+router.post("/login",authLimiter, async (req, res) => {
   const { email, password } = req.body;
   // Validate email format and sanitize input
   if (typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
@@ -44,6 +52,15 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+
+      // FIX: Set authentication cookie with httpOnly and secure flags
+    res.cookie('userId', user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+    });
+
     res.json({
       message: user.isAdmin ? "Admin Login successful" : "Login successful",
       userId: user.id,
@@ -56,7 +73,7 @@ router.post("/login", async (req, res) => {
 });
 
 // User registration with password hashing
-router.post("/register", async (req, res) => {
+router.post("/register", authLimiter , async (req, res) => {
   const { name, address, email, contact, password, role } = req.body;
 
   try {
