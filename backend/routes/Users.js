@@ -77,32 +77,59 @@ router.post("/login",authLimiter, async (req, res) => {
   }
 });
 
-// User registration with password hashing
-router.post("/register", authLimiter , async (req, res) => {
-  const { name, address, email, contact, password, role } = req.body;
 
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      name,
-      address,
-      email,
-      contact,
-      password: hashedPassword,
-      role,
-    });
-
-    await newUser.save();
-    return res.status(201).json("User Registered");
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({ error: "Email already exists" });
+// User registration with password hashing and input validation
+// FIX: Added express-validator to validate and sanitize registration fields
+router.post(
+  "/register",
+  authLimiter,
+  [
+    body("name").isString().trim().notEmpty().withMessage("Name is required"),
+    body("address").isString().trim().notEmpty().withMessage("Address is required"),
+    body("email").isEmail().normalizeEmail().withMessage("Valid email is required"),
+    body("contact").isString().trim().notEmpty().withMessage("Contact is required"),
+    // Strong password: min 8 chars, upper, lower, number, special char
+    body("password")
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters")
+      .matches(/[a-z]/)
+      .withMessage("Password must contain a lowercase letter")
+      .matches(/[A-Z]/)
+      .withMessage("Password must contain an uppercase letter")
+      .matches(/\d/)
+      .withMessage("Password must contain a number")
+      .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
+      .withMessage("Password must contain a special character"),
+    body("role").isIn(["admin", "collector", "resident", "recorder"]).withMessage("Invalid role"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // If validation fails, return error response
+      return res.status(400).json({ errors: errors.array() });
     }
-    console.error(err);
-    res.status(500).json({ error: "Error registering user" });
+    const { name, address, email, contact, password, role } = req.body;
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({
+        name,
+        address,
+        email,
+        contact,
+        password: hashedPassword,
+        role,
+      });
+      await newUser.save();
+      return res.status(201).json("User Registered");
+    } catch (err) {
+      if (err.code === 11000) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+      console.error(err);
+      res.status(500).json({ error: "Error registering user" });
+    }
   }
-});
+);
 
 // //get all users
 // router.route("/getall").get((req, res) => {

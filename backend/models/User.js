@@ -6,17 +6,14 @@ const userSchema = new Schema({
   id: {
     type: Number,
   },
-
   name: {
     type: String,
     required: true,
   },
-
   address: {
     type: String,
     required: true,
   },
-
   email: {
     type: String,
     required: true,
@@ -24,21 +21,33 @@ const userSchema = new Schema({
     lowercase: true, // Ensure the email is stored in lowercase
     match: [/\S+@\S+\.\S+/, "is invalid"], // Simple email format validation
   },
-
   contact: {
     type: String,
     required: true,
   },
-
   password: {
     type: String,
     required: true,
+    validate: {
+      validator: function(v) {
+        // At least 8 chars, one uppercase, one lowercase, one number, one special char
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(v);
+      },
+      message: 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
+    }
   },
-
   role: {
     type: String,
     required: true,
     enum: ["admin", "collector", "resident", "recorder"], // Allow only specific roles
+  },
+  // Email verification fields
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  emailVerificationToken: {
+    type: String,
   },
 });
 
