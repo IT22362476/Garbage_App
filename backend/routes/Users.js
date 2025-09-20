@@ -186,7 +186,12 @@ router.post('/collector/updateProfile',
     }
     const { userId, name, address, email, contact } = req.body;
     try {
-      const user = await User.findOne({ id: userId });
+      // Validate userId as integer
+      if (isNaN(Number(userId))) {
+        // FIX: Added userId validation to prevent NoSQL injection
+        return res.status(400).json({ message: 'Invalid userId format.' });
+      }
+      const user = await User.findOne({ id: Number(userId) });
       if (!user) {
         return res.status(404).json({ message: 'User not found.' });
       }
