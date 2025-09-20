@@ -52,9 +52,14 @@ router.route("/getAllPickups").get((req, res) => {
 // Route to get a single pickup by ID
 router.route("/getOnePickup/:id").get(async (req, res) => {
   let pickupId = req.params.id;
+  // Validate pickupId as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(pickupId)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).send({ status: 'Invalid pickupId format.' });
+  }
 
   try {
-    const schedulePickup = await SchedulePickup.findById(pickupId);
+  const schedulePickup = await SchedulePickup.findById(pickupId);
     if (!schedulePickup) {
       return res.status(404).send({ status: "Pickup not found" });
     }
@@ -69,6 +74,11 @@ router.route("/getOnePickup/:id").get(async (req, res) => {
 
 router.route("/deletePickup/:id").delete(async (req, res) => {
   let pickupId = req.params.id; // Access the _id from the URL parameter
+  // Validate pickupId as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(pickupId)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).send({ status: 'Invalid pickupId format.' });
+  }
 
   await SchedulePickup.findByIdAndDelete(pickupId)
     .then(() => {
@@ -98,6 +108,11 @@ router.route("/count").get((req, res) => {
 router.route("/updateStatus/:id").put(async (req, res) => {
   const { status } = req.body;
   const pickupId = req.params.id;
+  // Validate pickupId as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(pickupId)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).send({ status: 'Invalid pickupId format.' });
+  }
 
   try {
     const updatedPickup = await SchedulePickup.findByIdAndUpdate(

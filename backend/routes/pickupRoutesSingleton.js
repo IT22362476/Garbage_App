@@ -70,6 +70,11 @@ class PickupRoutesSingleton {
         // Route to get a single pickup by ID
         this.router.route("/getOnePickup/:id").get(async (req, res) => {
             let pickupId = req.params.id;
+            // Validate pickupId as a valid MongoDB ObjectId
+            if (!require('mongoose').Types.ObjectId.isValid(pickupId)) {
+                // FIX: Added ObjectId validation to prevent NoSQL injection
+                return res.status(400).send({ status: 'Invalid pickupId format.' });
+            }
 
             try {
                 const schedulePickup = await SchedulePickup.findById(pickupId);
@@ -89,6 +94,11 @@ class PickupRoutesSingleton {
         // Route to delete pickups
         this.router.route("/deletePickup/:id").delete(async (req, res) => {
             let pickupId = req.params.id;
+            // Validate pickupId as a valid MongoDB ObjectId
+            if (!require('mongoose').Types.ObjectId.isValid(pickupId)) {
+                // FIX: Added ObjectId validation to prevent NoSQL injection
+                return res.status(400).send({ status: 'Invalid pickupId format.' });
+            }
 
             await SchedulePickup.findByIdAndDelete(pickupId)
                 .then(() => {

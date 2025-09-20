@@ -19,18 +19,39 @@ router.route("/getapproved/:userID").get((req, res) => {
 // Route to update the status of a pickup
 router.route("/update/:id").post((req, res) => {
   const pickupId = req.params.id;
-  const { status } = req.body;
-
-  // Find the pickup by id and update the status
-  Approvedpickup.findByIdAndUpdate(pickupId, { status: status }, { new: true })
-    .then((updatedPickup) => {
-      console.log("Updated pickup:", updatedPickup);
-      res.json(updatedPickup);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).send("Error updating pickup: " + err);
-    });
+  const { status, collectorId } = req.body;
+  // Validate pickupId as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(pickupId)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).json({ message: 'Invalid pickupId format.' });
+  }
+  // If status is present, update status
+  if (status !== undefined) {
+    Approvedpickup.findByIdAndUpdate(pickupId, { status: status }, { new: true })
+      .then((updatedPickup) => {
+        console.log("Updated pickup:", updatedPickup);
+        res.json(updatedPickup);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send("Error updating pickup: " + err);
+      });
+    return;
+  }
+  // If collectorId is present, update collector
+  if (collectorId !== undefined) {
+    Approvedpickup.findByIdAndUpdate(pickupId, { collector: collectorId }, { new: true })
+      .then((updatedPickup) => {
+        console.log('Updated pickup:', updatedPickup); // Log the updated document
+        res.json(updatedPickup);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).send("Error updating pickup: " + err);
+      });
+    return;
+  }
+  res.status(400).json({ message: 'No valid update field provided.' });
 });
 
 

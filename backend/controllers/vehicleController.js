@@ -34,7 +34,13 @@ const getAllAvailableVehicles = async (req, res) => {
 // Get a vehicle by ID
 const getVehicleById = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findById(req.params.id);
+    // Validate id as a valid MongoDB ObjectId
+    const { id } = req.params;
+    if (!require('mongoose').Types.ObjectId.isValid(id)) {
+      // FIX: Added ObjectId validation to prevent NoSQL injection
+      return res.status(400).json({ message: 'Invalid vehicle id format.' });
+    }
+    const vehicle = await Vehicle.findById(id);
     if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
     res.json(vehicle);
   } catch (err) {
@@ -45,8 +51,14 @@ const getVehicleById = async (req, res) => {
 // Update a vehicle
 const updateVehicle = async (req, res) => {
   try {
+    // Validate id as a valid MongoDB ObjectId
+    const { id } = req.params;
+    if (!require('mongoose').Types.ObjectId.isValid(id)) {
+      // FIX: Added ObjectId validation to prevent NoSQL injection
+      return res.status(400).json({ message: 'Invalid vehicle id format.' });
+    }
     const updatedVehicle = await Vehicle.findByIdAndUpdate(
-      req.params.id,
+      id,
       req.body,
       { new: true }
     );
@@ -61,7 +73,13 @@ const updateVehicle = async (req, res) => {
 // Delete a vehicle
 const deleteVehicle = async (req, res) => {
   try {
-    const deletedVehicle = await Vehicle.findByIdAndDelete(req.params.id);
+    // Validate id as a valid MongoDB ObjectId
+    const { id } = req.params;
+    if (!require('mongoose').Types.ObjectId.isValid(id)) {
+      // FIX: Added ObjectId validation to prevent NoSQL injection
+      return res.status(400).json({ message: 'Invalid vehicle id format.' });
+    }
+    const deletedVehicle = await Vehicle.findByIdAndDelete(id);
     if (!deletedVehicle)
       return res.status(404).json({ message: "Vehicle not found" });
     res.json({ message: "Vehicle deleted successfully" });

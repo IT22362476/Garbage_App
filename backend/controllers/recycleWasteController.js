@@ -44,9 +44,14 @@ const getAllRecyclingWastes = async (req, res) => {
 // READ: Get one recycling dataset by recycleID
 const getRecyclingWasteById = async (req, res) => {
   const { recycleID } = req.params;
+  // Validate recycleID as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(recycleID)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).json({ message: 'Invalid recycleID format.' });
+  }
 
   try {
-    const waste = await RecycleWaste.findById(recycleID);
+  const waste = await RecycleWaste.findById(recycleID);
     if (!waste) {
       return res.status(404).json({ message: 'Recycling waste data not found' });
     }
@@ -59,6 +64,11 @@ const getRecyclingWasteById = async (req, res) => {
 // UPDATE: Update a recycling dataset by recycleID
 const updateRecyclingWaste = async (req, res) => {
   const { recycleID } = req.params;
+  // Validate recycleID as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(recycleID)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).json({ message: 'Invalid recycleID format.' });
+  }
   const {
     truckNumber,
     area,
@@ -97,9 +107,14 @@ const updateRecyclingWaste = async (req, res) => {
 // DELETE: Delete a recycling dataset by recycleID
 const deleteRecyclingWaste = async (req, res) => {
   const { recycleID } = req.params;
+  // Validate recycleID as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(recycleID)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).json({ message: 'Invalid recycleID format.' });
+  }
 
   try {
-    const deletedWaste = await RecycleWaste.findByIdAndDelete(recycleID);
+  const deletedWaste = await RecycleWaste.findByIdAndDelete(recycleID);
 
     if (!deletedWaste) {
       return res.status(404).json({ message: 'Recycling waste data not found' });

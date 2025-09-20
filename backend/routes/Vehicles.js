@@ -57,9 +57,16 @@ router.get('/Vehicle/:id',
 );
 
 // Update a vehicle by ID
+// Update a vehicle by ID with input validation to prevent NoSQL injection
 router.put('/updateVehicle/:id', async (req, res) => {
+  const { id } = req.params;
+  // Validate id as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(id)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).json({ error: 'Invalid vehicle id format.' });
+  }
   try {
-    const updatedVehicle = await Vehicle.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedVehicle = await Vehicle.findByIdAndUpdate(id, req.body, { new: true });
     if (!updatedVehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
@@ -70,9 +77,16 @@ router.put('/updateVehicle/:id', async (req, res) => {
 });
 
 // Delete a vehicle by ID
+// Delete a vehicle by ID with input validation to prevent NoSQL injection
 router.delete('/deleteVehicle/:id', async (req, res) => {
+  const { id } = req.params;
+  // Validate id as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(id)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).json({ error: 'Invalid vehicle id format.' });
+  }
   try {
-    const deletedVehicle = await Vehicle.findByIdAndDelete(req.params.id);
+    const deletedVehicle = await Vehicle.findByIdAndDelete(id);
     if (!deletedVehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }

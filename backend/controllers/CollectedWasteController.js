@@ -13,6 +13,11 @@ class CollectedWasteController {
     const totalWaste = (parseFloat(paperWaste) + parseFloat(foodWaste) + parseFloat(polytheneWaste)).toFixed(2);
 
     try {
+      // Validate wasteCollector as a string and sanitize input to prevent NoSQL injection
+      if (typeof wasteCollector !== 'string' || /[$.]/.test(wasteCollector)) {
+        return res.status(400).json({ message: 'Invalid waste collector name.' });
+      }
+      // FIX: Added input validation and sanitization for wasteCollector to prevent NoSQL injection
       const user = await User.findOne({ name: wasteCollector });
       if (!user) {
         return res.status(400).json({ message: 'Invalid waste collector. No user found with the given name.' });
@@ -46,7 +51,13 @@ class CollectedWasteController {
 
   async getCollectedWasteById(req, res) {
     try {
-      const collectedWaste = await CollectedWaste.findById(req.params.collectedId);
+      // Validate collectedId as a valid MongoDB ObjectId
+      const { collectedId } = req.params;
+      if (!require('mongoose').Types.ObjectId.isValid(collectedId)) {
+        // FIX: Added ObjectId validation to prevent NoSQL injection
+        return res.status(400).json({ message: 'Invalid collectedId format.' });
+      }
+      const collectedWaste = await CollectedWaste.findById(collectedId);
       if (!collectedWaste) return res.status(404).json({ message: 'Record not found' });
       res.status(200).json(collectedWaste);
     } catch (error) {
@@ -59,8 +70,14 @@ class CollectedWasteController {
     const totalWaste = (parseFloat(paperWaste) + parseFloat(foodWaste) + parseFloat(polytheneWaste)).toFixed(2);
 
     try {
+      // Validate collectedId as a valid MongoDB ObjectId
+      const { collectedId } = req.params;
+      if (!require('mongoose').Types.ObjectId.isValid(collectedId)) {
+        // FIX: Added ObjectId validation to prevent NoSQL injection
+        return res.status(400).json({ message: 'Invalid collectedId format.' });
+      }
       const updatedWaste = await CollectedWaste.findByIdAndUpdate(
-        req.params.collectedId,
+        collectedId,
         { truckNumber, wasteCollector, area, paperWaste, foodWaste, polytheneWaste, totalWaste },
         { new: true }
       );
@@ -74,7 +91,13 @@ class CollectedWasteController {
 
   async deleteCollectedWaste(req, res) {
     try {
-      const deletedWaste = await CollectedWaste.findByIdAndDelete(req.params.collectedId);
+      // Validate collectedId as a valid MongoDB ObjectId
+      const { collectedId } = req.params;
+      if (!require('mongoose').Types.ObjectId.isValid(collectedId)) {
+        // FIX: Added ObjectId validation to prevent NoSQL injection
+        return res.status(400).json({ message: 'Invalid collectedId format.' });
+      }
+      const deletedWaste = await CollectedWaste.findByIdAndDelete(collectedId);
       if (!deletedWaste) return res.status(404).json({ message: 'Record not found' });
       res.status(200).json({ message: 'Record deleted successfully' });
     } catch (error) {
