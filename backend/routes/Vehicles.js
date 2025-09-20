@@ -65,8 +65,17 @@ router.put('/updateVehicle/:id', async (req, res) => {
     // FIX: Added ObjectId validation to prevent NoSQL injection
     return res.status(400).json({ error: 'Invalid vehicle id format.' });
   }
+  // Only allow specific fields to be updated to prevent NoSQL injection via update operators
+  // FIX: Sanitize req.body to only allow safe fields
+  const allowedFields = ['name', 'type', 'number', 'capacity', 'isAvailable'];
+  const updateData = {};
+  for (const key of allowedFields) {
+    if (Object.prototype.hasOwnProperty.call(req.body, key)) {
+      updateData[key] = req.body[key];
+    }
+  }
   try {
-    const updatedVehicle = await Vehicle.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedVehicle = await Vehicle.findByIdAndUpdate(id, updateData, { new: true });
     if (!updatedVehicle) {
       return res.status(404).json({ error: 'Vehicle not found' });
     }
