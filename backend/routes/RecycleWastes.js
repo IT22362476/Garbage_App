@@ -1,5 +1,5 @@
 // routes/RecycleWastes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const {
   addRecyclingWaste,
@@ -7,21 +7,37 @@ const {
   getRecyclingWasteById,
   updateRecyclingWaste,
   deleteRecyclingWaste,
-} = require('../controllers/recycleWasteController');
+} = require("../controllers/recycleWasteController");
+const authorizeRoles = require("../middlewares/auth"); // Importing authorization middleware
 
 // CREATE: Add a new recycling dataset
-router.post('/addRecyclingWastes', addRecyclingWaste);
+// CREATE: Add a new recycling dataset (admin or collector only)
+router.post(
+  "/addRecyclingWastes",
+  authorizeRoles("admin", "collector"),
+  addRecyclingWaste
+);
 
 // READ: Get all recycling datasets
-router.get('/allRecyclingWastes', getAllRecyclingWastes);
+router.get("/allRecyclingWastes", getAllRecyclingWastes);
 
 // READ: Get one recycling dataset by recycleID
-router.get('/getRecyclingWaste/:recycleID', getRecyclingWasteById);
+router.get("/getRecyclingWaste/:recycleID", getRecyclingWasteById);
 
 // UPDATE: Update a recycling dataset by recycleID
-router.put('/updateRecyclingWaste/:recycleID', updateRecyclingWaste);
+// UPDATE: Update a recycling dataset by recycleID (admin or collector only)
+router.put(
+  "/updateRecyclingWaste/:recycleID",
+  authorizeRoles("admin", "collector"),
+  updateRecyclingWaste
+);
 
 // DELETE: Delete a recycling dataset by recycleID
-router.delete('/deleteRecyclingWaste/:recycleID', deleteRecyclingWaste);
+// DELETE: Delete a recycling dataset by recycleID (admin only)
+router.delete(
+  "/deleteRecyclingWaste/:recycleID",
+  authorizeRoles("admin"),
+  deleteRecyclingWaste
+);
 
 module.exports = router;
