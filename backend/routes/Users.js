@@ -206,21 +206,22 @@ router.post('/collector/updateProfile',
 // Update password
 router.post('/collector/updatePassword', async (req, res) => {
   const { userId, currentPassword, newPassword } = req.body;
-
+  // Validate userId as integer
+  if (isNaN(Number(userId))) {
+    // FIX: Added userId validation to prevent NoSQL injection
+    return res.status(400).json({ message: 'Invalid userId format.' });
+  }
   try {
-    const user = await User.findOne({ id: userId });
+    const user = await User.findOne({ id: Number(userId) });
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
-
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Current password is incorrect.' });
     }
-
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
-
     res.json({ message: 'Password updated successfully.' });
   } catch (error) {
     console.error('Error updating password:', error);

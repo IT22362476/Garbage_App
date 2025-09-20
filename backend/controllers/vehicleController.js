@@ -91,16 +91,20 @@ const deleteVehicle = async (req, res) => {
 // Update vehicle availability
 const updateAvailable = async (req, res) => {
   try {
+    const { id } = req.params;
+    // Validate id as a valid MongoDB ObjectId
+    if (!require('mongoose').Types.ObjectId.isValid(id)) {
+      // FIX: Added ObjectId validation to prevent NoSQL injection
+      return res.status(400).json({ message: 'Invalid vehicle id format.' });
+    }
     const updatedVehicle = await Vehicle.findByIdAndUpdate(
-      req.params.id,
+      id,
       { isAvailable: req.body.isAvailable },
       { new: true }
     );
-
     if (!updatedVehicle) {
       return res.status(404).json({ message: "Vehicle not found" });
     }
-
     res.json({
       message: "Vehicle availability updated successfully",
       vehicle: updatedVehicle,
