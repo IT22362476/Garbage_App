@@ -30,20 +30,20 @@ let User = require("../models/User");
 // User login
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
+  // Validate email format and sanitize input
+  if (typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
+    // FIX: Added email validation to prevent NoSQL injection
+    return res.status(400).json({ error: "Invalid email format" });
+  }
   try {
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(401).json({ error: "Not Registered, re-register" });
     }
-
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-
     res.json({
       message: user.isAdmin ? "Admin Login successful" : "Login successful",
       userId: user.id,
@@ -272,14 +272,16 @@ router.get('/collectors/count', async (req, res) => {
 
 router.route("/get/:id").get(async (req, res) => {
   let userId = req.params.id;
-  
+  // Validate userId as integer
+  if (isNaN(Number(userId))) {
+    // FIX: Added userId validation to prevent NoSQL injection
+    return res.status(400).send({ status: "Invalid userId format" });
+  }
   try {
-    const user = await User.findOne({ id: userId });
-
+    const user = await User.findOne({ id: Number(userId) });
     if (!user) {
       return res.status(404).send({ status: "User not found" });
     }
-
     res.status(200).send({ status: "User fetched", user: user });
   } catch (err) {
     console.error(err);

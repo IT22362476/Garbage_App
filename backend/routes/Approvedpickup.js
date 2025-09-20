@@ -71,19 +71,28 @@ module.exports = router;
 
 // Allocate a collector to a pickup
 router.route("/update/:id").post((req, res) => {
-    const pickupId = req.params.id;
-    const { collectorId } = req.body;
-
-    // Find the pickup by id and update the collector
-    Approvedpickup.findByIdAndUpdate(pickupId, { collector: collectorId }, { new: true })
-        .then((updatedPickup) => {
-            console.log('Updated pickup:', updatedPickup); // Log the updated document
-            res.json(updatedPickup);
-        })
-        .catch((err) => {
-            console.log(err);
-            res.status(500).send("Error allocating collector: " + err);
-        });
+  const pickupId = req.params.id;
+  const { collectorId } = req.body;
+  // Validate pickupId as a valid MongoDB ObjectId
+  if (!require('mongoose').Types.ObjectId.isValid(pickupId)) {
+    // FIX: Added ObjectId validation to prevent NoSQL injection
+    return res.status(400).json({ message: 'Invalid pickupId format.' });
+  }
+  // Validate collectorId as a string and sanitize input
+  if (typeof collectorId !== 'string' || /[$.]/.test(collectorId)) {
+    // FIX: Added collectorId sanitization to prevent NoSQL injection
+    return res.status(400).json({ message: 'Invalid collectorId format.' });
+  }
+  // Find the pickup by id and update the collector
+  Approvedpickup.findByIdAndUpdate(pickupId, { collector: collectorId }, { new: true })
+    .then((updatedPickup) => {
+      console.log('Updated pickup:', updatedPickup); // Log the updated document
+      res.json(updatedPickup);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send("Error allocating collector: " + err);
+    });
 });
 
 
