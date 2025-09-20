@@ -1,5 +1,7 @@
 const bcrypt = require("bcryptjs");
 const router = require("express").Router();
+const { body, param, validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 let User = require("../models/User");
 
 // router.route("/add").post((req, res) => {
@@ -114,58 +116,92 @@ router.route("/").get((req, res) => {
 
 
 // Get a single user by ID
-router.route("/get/:id").get(async (req, res) => {
-  const userId = req.params.id;
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+router.route("/get/:id").get(
+  param("id").custom((value) => {
+    if (!mongoose.Types.ObjectId.isValid(value) && isNaN(Number(value))) {
+      throw new Error("Invalid user ID");
     }
-    res.status(200).json({ status: "User fetched", user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error fetching user" });
+    return true;
+  }),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const userId = req.params.id;
+    try {
+      // Try both ObjectId and integer id
+      let user = null;
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        user = await User.findById(userId);
+      } else if (!isNaN(Number(userId))) {
+        user = await User.findOne({ id: Number(userId) });
+      }
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.status(200).json({ status: "User fetched", user });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Error fetching user" });
+    }
   }
-});
+);
 
 // Get user by userid
 
-router.get('/collector/:userid', async (req, res) => {
-  try {
-    const user = await User.findOne({ id: req.params.userid });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
+router.get('/collector/:userid',
+  param('userid').isInt().withMessage('User ID must be an integer'),
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
-
-    res.json(user);
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
-    res.status(500).json({ message: 'Error fetching user profile.' });
+    try {
+      const user = await User.findOne({ id: req.params.userid });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      res.status(500).json({ message: 'Error fetching user profile.' });
+    }
   }
-});
+);
 
 // Update profile information
-router.post('/collector/updateProfile', async (req, res) => {
-  const { userId, name, address, email, contact } = req.body;
-
-  try {
-    const user = await User.findOne({ id: userId });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
+router.post('/collector/updateProfile',
+  [
+    body('userId').isInt().withMessage('User ID must be an integer'),
+    body('email').optional().isEmail().withMessage('Invalid email'),
+    body('contact').optional().isString().trim().escape(),
+    body('name').optional().isString().trim().escape(),
+    body('address').optional().isString().trim().escape(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
-
-    user.name = name || user.name;
-    user.address = address || user.address;
-    user.email = email || user.email;
-    user.contact = contact || user.contact;
-
-    await user.save();
-    res.json({ message: 'Profile updated successfully.' });
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    res.status(500).json({ message: 'Error updating profile.' });
+    const { userId, name, address, email, contact } = req.body;
+    try {
+      const user = await User.findOne({ id: userId });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+      user.name = name || user.name;
+      user.address = address || user.address;
+      user.email = email || user.email;
+      user.contact = contact || user.contact;
+      await user.save();
+      res.json({ message: 'Profile updated successfully.' });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ message: 'Error updating profile.' });
+    }
   }
-});
+);
 
 // Update password
 router.post('/collector/updatePassword', async (req, res) => {

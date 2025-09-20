@@ -23,18 +23,38 @@ router.get('/allVehicles', async (req, res) => {
   }
 });
 
+// Import express-validator for input validation
+const { param, validationResult } = require('express-validator');
+
 // Get a specific vehicle by ID
-router.get('/Vehicle/:id', async (req, res) => {
-  try {
-    const vehicle = await Vehicle.findById(req.params.id);
-    if (!vehicle) {
-      return res.status(404).json({ error: 'Vehicle not found' });
+// Validate the vehicle ID to prevent NoSQL injection attacks
+router.get('/Vehicle/:id',
+  // Only allow valid MongoDB ObjectId format
+  param('id').custom((value) => {
+    if (!/^[a-fA-F0-9]{24}$/.test(value)) {
+      throw new Error('Invalid vehicle ID');
     }
-    res.json(vehicle);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    return true;
+  }),
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // If validation fails, return error response
+      return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+      // Safe to use req.params.id in query now
+      const vehicle = await Vehicle.findById(req.params.id);
+      if (!vehicle) {
+        return res.status(404).json({ error: 'Vehicle not found' });
+      }
+      res.json(vehicle);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
 // Update a vehicle by ID
 router.put('/updateVehicle/:id', async (req, res) => {
