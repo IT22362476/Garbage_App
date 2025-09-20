@@ -4,6 +4,11 @@ const bodyParser = require("body-parser");
 const cors = require('cors');
 const dotenv = require("dotenv");
 const app = express();
+
+// FIX: Add helmet middleware to emit standard security headers
+// Helmet helps secure Express apps by setting various HTTP headers
+const helmet = require('helmet');
+app.use(helmet());
 dotenv.config(); // Load environment variables
 const PORT = process.env.PORT || 8070;
 
