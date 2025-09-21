@@ -1,6 +1,7 @@
 // routes/RecycleWastes.js
 const express = require("express");
 const router = express.Router();
+
 const {
   addRecyclingWaste,
   getAllRecyclingWastes,
@@ -8,14 +9,16 @@ const {
   updateRecyclingWaste,
   deleteRecyclingWaste,
 } = require("../controllers/recycleWasteController");
-const authorizeRoles = require("../middlewares/auth"); // Importing authorization middleware
+const authorizeRoles = require("../middlewares/auth");
+const { authenticateJWT } = require("../middlewares/jwtAuth");
 
 // CREATE: Add a new recycling dataset (admin or collector only) with input validation and sanitization
 // FIX: Added express-validator to validate and sanitize input fields
 const { body, validationResult } = require("express-validator");
 router.post(
   "/addRecyclingWastes",
-  authorizeRoles("admin", "collector" , "recorder"),
+  authenticateJWT,
+  authorizeRoles("admin", "collector", "recorder"),
   [
     body("truckNumber").isString().trim().notEmpty().withMessage("Truck number is required"),
     body("area").isString().trim().notEmpty().withMessage("Area is required"),

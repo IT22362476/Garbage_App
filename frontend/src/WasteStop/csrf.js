@@ -2,17 +2,15 @@
 // Utility to fetch and cache CSRF token for secure requests in WasteStop forms
 import axios from 'axios';
 
-let csrfToken = null;
 
+// Always fetch a fresh CSRF token for every mutating request
 export async function getCsrfToken() {
-  if (csrfToken) return csrfToken;
   const res = await axios.get('http://localhost:8070/user/csrf-token', { withCredentials: true });
-  csrfToken = res.data.csrfToken;
-  return csrfToken;
+  return res.data.csrfToken;
 }
 
 export function clearCsrfToken() {
-  csrfToken = null;
+  // No-op, since we no longer cache the token
 }
 
 export async function withCsrf(config = {}) {
@@ -22,6 +20,7 @@ export async function withCsrf(config = {}) {
     headers: {
       ...(config.headers || {}),
       'CSRF-Token': token,
+      'csrf-token': token, // add lowercase variant for compatibility
     },
     withCredentials: true,
   };
