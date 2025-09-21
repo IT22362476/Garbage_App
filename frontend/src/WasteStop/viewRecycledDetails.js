@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { withCsrf } from './csrf';
 import WasteHeader from './WasteHeader';
 import Button from '../components/Button';
 
@@ -21,9 +22,13 @@ const ViewRecycledDetails = () => {
   }, []);
 
   // Handle delete
+  // FIX: Add CSRF token to delete request to prevent 403 Forbidden error
   const handleDelete = async (recycleID) => {
     try {
-      await axios.delete(`http://localhost:8070/recycleWaste/deleteRecyclingWaste/${recycleID}`);
+      await axios.delete(
+        `http://localhost:8070/recycleWaste/deleteRecyclingWaste/${recycleID}`,
+        await withCsrf()
+      );
       setWastes(wastes.filter(waste => waste._id !== recycleID));
       alert('Recycling waste deleted successfully');
     } catch (error) {
@@ -39,12 +44,14 @@ const ViewRecycledDetails = () => {
   };
 
   // Submit the updated data
+  // FIX: Add CSRF token to update request to prevent 403 Forbidden error
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       await axios.put(
         `http://localhost:8070/recycleWaste/updateRecyclingWaste/${editFormData._id}`,
-        editFormData
+        editFormData,
+        await withCsrf()
       );
       setWastes(wastes.map((waste) => (waste._id === editFormData._id ? editFormData : waste)));
       setEditFormData(null);

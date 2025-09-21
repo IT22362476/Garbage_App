@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { withCsrf } from "./csrf";
 import WasteHeader from "./WasteHeader";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
@@ -124,9 +125,11 @@ const RecycleForm = () => {
 
     try {
       console.log("Submitting data:", formData);
+      // FIX: Add CSRF token to the request to prevent 403 Forbidden error
       const response = await axios.post(
         "http://localhost:8070/recycleWaste/addRecyclingWastes",
-        formData
+        formData,
+        await withCsrf()
       );
       console.log("Response from server:", response.data);
 
