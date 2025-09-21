@@ -2,7 +2,12 @@ const bcrypt = require("bcryptjs");
 const router = require("express").Router();
 const { body, param, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
+const jwt = require('jsonwebtoken');
+const { authenticateJWT } = require('../middlewares/jwtAuth');
 let User = require("../models/User");
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 // FIX: Added endpoint to provide CSRF token to frontend
 router.get('/csrf-token', (req, res) => {
@@ -57,6 +62,25 @@ router.post("/login",authLimiter, async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+
+    // Create JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        email: user.email,
+        role: user.role 
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    // Set the token as a secure HTTP-only cookie
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
       // FIX: Set authentication cookie with httpOnly and secure flags
     res.cookie('userId', user.id, {
@@ -373,5 +397,25 @@ router.put('/updatePassword/:userID', async (req, res) => {
   }
 });
 
+// Logout route
+router.post('/logout', (req, res) => {
+  res.clearCookie('authToken');
+  res.clearCookie('userId');
+  res.json({ message: 'Logged out successfully' });
+});
+
+// Protected route to get current user profile
+router.get('/profile', authenticateJWT, (req, res) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    address: req.user.address,
+    contact: req.user.contact,
+    role: req.user.role,
+    avatar: req.user.avatar,
+    isOAuthUser: req.user.isOAuthUser
+  });
+});
 
 module.exports = router;
