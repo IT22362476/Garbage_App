@@ -32,69 +32,100 @@ import DataAnalytics from "./admin/DataAnalytics";
 import GarbageStationSummary from "./WasteStop/GarbageStationSummary";
 import Home from "./pages/Home";
 import ProfileRes from "./Resident/ProfileRes";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import OAuthCallback from "./components/OAuthCallback";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <Router>
-      <div>
-        <ToastContainer /> {/* Add ToastContainer here */}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<UserTypeSelection />} />
-          <Route path="/register2" element={<Register />} />
-          <Route path="/logout" element={<Logout/>} />
-          <Route path="/residentHome" element={<HomePage />} />
-          <Route path="/schedule-pickup" element={<SchedulePickupPage />} />
-          <Route
-            path="/add-garbage-details"
-            element={<AddGarbageDetailsPage />}
-          />
-          <Route path="/confirmation" element={<ConfirmationPage />} />
-          <Route path="/MyRequestsPage" element={<MyRequestsPage />} />
-          <Route path="/collectedWaste" element={<CollectedWasteHome />} />
-          <Route path="/viewCollectedWaste" element={<CollectedWasteTable />} />
-          <Route path="/RecycleForm" element={<RecycleForm />} />
-          <Route path="/adminHome" element={<AdminHome />} />
-          <Route path="/update/:id" element={<WasteCollectedUpdateForm />} />
-          <Route
-            path="/CollectedWasteDashboard"
-            element={<CollectedWasteDashboard />}
-          />
-          <Route
-            path="/viewRecycledDetails"
-            element={<ViewRecycledDetails />}
-          />
-          <Route path="/dataAnalytics" element={<DataAnalytics />} />
-          <Route path="/requestPage" element={<RequestPage />} />
-          <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
-          <Route path="/TotalGarbage" element={<TotalGarbage />} />
-          <Route path="/Logout" element={<Logout />} />
+    <AuthProvider>
+      <Router>
+        <div>
+          <ToastContainer /> {/* Add ToastContainer here */}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<UserTypeSelection />} />
+            <Route path="/register2" element={<Register />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/oauth/callback" element={<OAuthCallback />} />
+            <Route
+              path="/residentHome"
+              element={
+                <ProtectedRoute requiredRole="resident">
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/schedule-pickup" element={<SchedulePickupPage />} />
+            <Route
+              path="/add-garbage-details"
+              element={<AddGarbageDetailsPage />}
+            />
+            <Route path="/confirmation" element={<ConfirmationPage />} />
+            <Route path="/MyRequestsPage" element={<MyRequestsPage />} />
+            <Route path="/collectedWaste" element={<CollectedWasteHome />} />
+            <Route
+              path="/viewCollectedWaste"
+              element={<CollectedWasteTable />}
+            />
+            <Route path="/RecycleForm" element={<RecycleForm />} />
+            <Route path="/adminHome" element={<AdminHome />} />
+            <Route path="/update/:id" element={<WasteCollectedUpdateForm />} />
+            <Route
+              path="/CollectedWasteDashboard"
+              element={<CollectedWasteDashboard />}
+            />
+            <Route
+              path="/viewRecycledDetails"
+              element={<ViewRecycledDetails />}
+            />
+            <Route path="/dataAnalytics" element={<DataAnalytics />} />
+            <Route path="/requestPage" element={<RequestPage />} />
+            <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
+            <Route path="/TotalGarbage" element={<TotalGarbage />} />
+            <Route path="/Logout" element={<Logout />} />
 
-          <Route path="/Profile" element={<ProfileRes />} />
-          
+            <Route path="/Profile" element={<ProfileRes />} />
 
+            <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
+            <Route path="/TotalGarbage" element={<TotalGarbage />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/Profile/:userID" element={<Profile />} />
 
-        <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
-        <Route path="/TotalGarbage" element={<TotalGarbage />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/Profile/:userID" element={<Profile />} />
+            <Route
+              path="/CollectedWasteDashboard"
+              element={<CollectedWasteDashboard />}
+            />
+            <Route
+              path="/GarbageStationSummary"
+              element={<GarbageStationSummary />}
+            />
+            <Route
+              path="/viewRecycledDetails"
+              element={<ViewRecycledDetails />}
+            />
 
+            <Route path="/requestPage" element={<RequestPage />} />
+            <Route path="/manageVehicles" element={<ManageVehicles />} />
+            <Route path="/manageCollectors" element={<ManageCollectors />} />
 
-          <Route  path="/CollectedWasteDashboard"  element={<CollectedWasteDashboard />}/>
-          <Route  path="/GarbageStationSummary"  element={<GarbageStationSummary />}/>
-          <Route path="/viewRecycledDetails" element={<ViewRecycledDetails />} />
-
-          <Route path="/requestPage" element={<RequestPage />} />
-          <Route path="/manageVehicles" element={<ManageVehicles />} />
-          <Route path="/manageCollectors" element={<ManageCollectors />} />
-
-          <Route path="/admin" element={<Admin />} />
-          {/* 404 Not Found route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
-    </Router>
+            <Route path="/admin" element={<Admin />} />
+            {/* 404 Not Found route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
