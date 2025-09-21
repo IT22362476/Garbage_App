@@ -6,7 +6,6 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 // JWT authentication middleware
 const authenticateJWT = async (req, res, next) => {
   try {
-    console.log("JWT auth middleware invoked");
     const token = req.cookies.authToken; // httpOnly cookie
 
     if (!token) {
@@ -15,22 +14,16 @@ const authenticateJWT = async (req, res, next) => {
         .json({ error: "Access denied. No token provided." });
     }
 
-    console.log("JWT token from request:", token);
-    console.log("JWT secret being used:", JWT_SECRET);
-
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log("Decoded token:", decoded);
 
     // Use findOne with the custom id field instead of findById
     const user = await User.findOne({ id: decoded.userId }).select("-password");
-    console.log("User found by custom ID:", user);
 
     if (!user) {
       console.log("No user found for custom ID:", decoded.userId);
       return res.status(401).json({ error: "Invalid token. User not found." });
     }
 
-    console.log("Authenticated user:", user);
     req.user = user;
     next();
   } catch (error) {

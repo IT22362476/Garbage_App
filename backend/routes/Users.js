@@ -52,7 +52,6 @@ router.post("/login", authLimiter, async (req, res) => {
     );
 
     // Set the token as a secure HTTP-only cookie
-    console.log("Setting authToken cookie, NODE_ENV:", process.env.NODE_ENV);
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -68,12 +67,10 @@ router.post("/login", authLimiter, async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
-    console.log("Cookies set, responding with user data");
     res.json({
       message: user.isAdmin ? "Admin Login successful" : "Login successful",
       userId: user.id,
       role: user.role,
-      token: token, // Add token to response for debugging
     });
   } catch (err) {
     console.error(err);
@@ -84,7 +81,6 @@ router.post("/login", authLimiter, async (req, res) => {
 // Protected route to get current user profile
 router.get("/profile", authenticateJWT, (req, res) => {
   try {
-    console.log("Profile route hit, user:", req.user);
     res.json({
       id: req.user.id,
       name: req.user.name,
