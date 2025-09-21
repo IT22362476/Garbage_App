@@ -12,7 +12,9 @@ const userSchema = new Schema({
   },
   address: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId; // Address not required for OAuth users initially
+    },
   },
   email: {
     type: String,
@@ -23,23 +25,44 @@ const userSchema = new Schema({
   },
   contact: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId; // Contact not required for OAuth users initially
+    },
   },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId; // Password not required for OAuth users
+    },
     validate: {
-      validator: function(v) {
+      validator: function (v) {
+        // Skip validation for OAuth users
+        if (this.googleId) return true;
         // At least 8 chars, one uppercase, one lowercase, one number, one special char
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(v);
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(
+          v
+        );
       },
-      message: 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
-    }
+      message:
+        "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.",
+    },
   },
   role: {
     type: String,
     required: true,
     enum: ["admin", "collector", "resident", "recorder"], // Allow only specific roles
+  },
+  // OAuth fields
+  googleId: {
+    type: String,
+    sparse: true, // Allows null values but ensures uniqueness when present
+  },
+  avatar: {
+    type: String,
+  },
+  isOAuthUser: {
+    type: Boolean,
+    default: false,
   },
   // Email verification fields
   isVerified: {

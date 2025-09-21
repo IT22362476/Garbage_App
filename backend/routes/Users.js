@@ -2,19 +2,24 @@ const bcrypt = require("bcryptjs");
 const router = require("express").Router();
 const { body, param, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const { authenticateJWT } = require("../middlewares/jwtAuth");
 let User = require("../models/User");
 
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+
 // FIX: Added endpoint to provide CSRF token to frontend
-router.get('/csrf-token', (req, res) => {
+router.get("/csrf-token", (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
 // FIX: Added rate limiting to prevent brute-force attacks on login and registration
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // limit each IP to 10 requests per windowMs
-  message: 'Too many attempts from this IP, please try again later.'
+  message: "Too many attempts from this IP, please try again later.",
 });
 
 // router.route("/add").post((req, res) => {
@@ -41,10 +46,10 @@ const authLimiter = rateLimit({
 // });
 
 // User login
-router.post("/login",authLimiter, async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   const { email, password } = req.body;
   // Validate email format and sanitize input
-  if (typeof email !== 'string' || !/^\S+@\S+\.\S+$/.test(email)) {
+  if (typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email)) {
     // FIX: Added email validation to prevent NoSQL injection
     return res.status(400).json({ error: "Invalid email format" });
   }
@@ -58,13 +63,32 @@ router.post("/login",authLimiter, async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-      // FIX: Set authentication cookie with httpOnly and secure flags
-    res.cookie('userId', user.id, {
+    // Create JWT token
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    // Set the token as a secure HTTP-only cookie
+    res.cookie("authToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-    });
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // FIX: Set authentication cookie with httpOnly and secure flags
+    res.cookie("userId", user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
 
     res.json({
       message: user.isAdmin ? "Admin Login successful" : "Login successful",
@@ -77,7 +101,6 @@ router.post("/login",authLimiter, async (req, res) => {
   }
 });
 
-
 // User registration with password hashing and input validation
 // FIX: Added express-validator to validate and sanitize registration fields
 router.post(
@@ -85,9 +108,20 @@ router.post(
   authLimiter,
   [
     body("name").isString().trim().notEmpty().withMessage("Name is required"),
-    body("address").isString().trim().notEmpty().withMessage("Address is required"),
-    body("email").isEmail().normalizeEmail().withMessage("Valid email is required"),
-    body("contact").isString().trim().notEmpty().withMessage("Contact is required"),
+    body("address")
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage("Address is required"),
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Valid email is required"),
+    body("contact")
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage("Contact is required"),
     // Strong password: min 8 chars, upper, lower, number, special char
     body("password")
       .isLength({ min: 8 })
@@ -100,7 +134,9 @@ router.post(
       .withMessage("Password must contain a number")
       .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
       .withMessage("Password must contain a special character"),
-    body("role").isIn(["admin", "collector", "resident", "recorder"]).withMessage("Invalid role"),
+    body("role")
+      .isIn(["admin", "collector", "resident", "recorder"])
+      .withMessage("Invalid role"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -147,7 +183,7 @@ router.route("/").get((req, res) => {
     .then((users) => {
       // Categorize users by role
       const categorizedUsers = users.reduce((acc, user) => {
-        const role = user.role || 'Guest'; // Default to 'Guest' if no role
+        const role = user.role || "Guest"; // Default to 'Guest' if no role
         if (!acc[role]) {
           acc[role] = [];
         }
@@ -162,7 +198,6 @@ router.route("/").get((req, res) => {
       res.status(500).json({ error: "Error fetching users" });
     });
 });
-
 
 // Get a single user by ID
 router.route("/get/:id").get(
@@ -199,8 +234,9 @@ router.route("/get/:id").get(
 
 // Get user by userid
 
-router.get('/collector/:userid',
-  param('userid').isInt().withMessage('User ID must be an integer'),
+router.get(
+  "/collector/:userid",
+  param("userid").isInt().withMessage("User ID must be an integer"),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -209,24 +245,25 @@ router.get('/collector/:userid',
     try {
       const user = await User.findOne({ id: req.params.userid });
       if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
+        return res.status(404).json({ message: "User not found." });
       }
       res.json(user);
     } catch (error) {
-      console.error('Error fetching user profile:', error);
-      res.status(500).json({ message: 'Error fetching user profile.' });
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Error fetching user profile." });
     }
   }
 );
 
 // Update profile information
-router.post('/collector/updateProfile',
+router.post(
+  "/collector/updateProfile",
   [
-    body('userId').isInt().withMessage('User ID must be an integer'),
-    body('email').optional().isEmail().withMessage('Invalid email'),
-    body('contact').optional().isString().trim().escape(),
-    body('name').optional().isString().trim().escape(),
-    body('address').optional().isString().trim().escape(),
+    body("userId").isInt().withMessage("User ID must be an integer"),
+    body("email").optional().isEmail().withMessage("Invalid email"),
+    body("contact").optional().isString().trim().escape(),
+    body("name").optional().isString().trim().escape(),
+    body("address").optional().isString().trim().escape(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -238,51 +275,52 @@ router.post('/collector/updateProfile',
       // Validate userId as integer
       if (isNaN(Number(userId))) {
         // FIX: Added userId validation to prevent NoSQL injection
-        return res.status(400).json({ message: 'Invalid userId format.' });
+        return res.status(400).json({ message: "Invalid userId format." });
       }
       const user = await User.findOne({ id: Number(userId) });
       if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
+        return res.status(404).json({ message: "User not found." });
       }
       user.name = name || user.name;
       user.address = address || user.address;
       user.email = email || user.email;
       user.contact = contact || user.contact;
       await user.save();
-      res.json({ message: 'Profile updated successfully.' });
+      res.json({ message: "Profile updated successfully." });
     } catch (error) {
-      console.error('Error updating profile:', error);
-      res.status(500).json({ message: 'Error updating profile.' });
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Error updating profile." });
     }
   }
 );
 
 // Update password
-router.post('/collector/updatePassword', async (req, res) => {
+router.post("/collector/updatePassword", async (req, res) => {
   const { userId, currentPassword, newPassword } = req.body;
   // Validate userId as integer
   if (isNaN(Number(userId))) {
     // FIX: Added userId validation to prevent NoSQL injection
-    return res.status(400).json({ message: 'Invalid userId format.' });
+    return res.status(400).json({ message: "Invalid userId format." });
   }
   try {
     const user = await User.findOne({ id: Number(userId) });
     if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
+      return res.status(404).json({ message: "User not found." });
     }
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Current password is incorrect.' });
+      return res
+        .status(400)
+        .json({ message: "Current password is incorrect." });
     }
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
-    res.json({ message: 'Password updated successfully.' });
+    res.json({ message: "Password updated successfully." });
   } catch (error) {
-    console.error('Error updating password:', error);
-    res.status(500).json({ message: 'Error updating password.' });
+    console.error("Error updating password:", error);
+    res.status(500).json({ message: "Error updating password." });
   }
-}); 
-
+});
 
 // Get all users, with optional filtering by role
 router.get("/:role?", async (req, res) => {
@@ -300,9 +338,9 @@ router.get("/:role?", async (req, res) => {
 });
 
 // Get count of collectors
-router.get('/collectors/count', async (req, res) => {
+router.get("/collectors/count", async (req, res) => {
   try {
-    const collectorCount = await User.countDocuments({ role: 'collector' });
+    const collectorCount = await User.countDocuments({ role: "collector" });
     res.json({ count: collectorCount });
   } catch (error) {
     console.error("Error fetching collector count:", error);
@@ -328,7 +366,7 @@ router.route("/get/:id").get(async (req, res) => {
     res.status(500).send({ status: "Error fetching user", error: err.message });
   }
 });
-router.put('/updatePassword/:userID', async (req, res) => {
+router.put("/updatePassword/:userID", async (req, res) => {
   const { userID } = req.params;
   const { oldPassword, newPassword } = req.body;
   if (!oldPassword || !newPassword) {
@@ -358,5 +396,25 @@ router.put('/updatePassword/:userID', async (req, res) => {
   }
 });
 
+// Logout route
+router.post("/logout", (req, res) => {
+  res.clearCookie("authToken");
+  res.clearCookie("userId");
+  res.json({ message: "Logged out successfully" });
+});
+
+// Protected route to get current user profile
+router.get("/profile", authenticateJWT, (req, res) => {
+  res.json({
+    id: req.user.id,
+    name: req.user.name,
+    email: req.user.email,
+    address: req.user.address,
+    contact: req.user.contact,
+    role: req.user.role,
+    avatar: req.user.avatar,
+    isOAuthUser: req.user.isOAuthUser,
+  });
+});
 
 module.exports = router;
