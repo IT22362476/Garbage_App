@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const dotenv = require("dotenv");
+const session = require('express-session');
+const passport = require('./config/passport');
 const app = express();
 
 
@@ -19,6 +21,21 @@ app.use(csurf({ cookie: { httpOnly: true, secure: process.env.NODE_ENV === 'prod
 
 dotenv.config(); // Load environment variables
 const PORT = process.env.PORT || 8070;
+
+// Session configuration for Passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 // Middleware
@@ -50,6 +67,10 @@ db.getConnection().once("open", () => {
 
 const userRouter = require("./routes/Users.js");
 app.use("/user",userRouter);
+
+// OAuth routes
+const authRouter = require("./routes/auth.js");
+app.use("/auth", authRouter);
 
 const pickupRouter = require("./routes/SchedulePickups.js");
 app.use("/schedulePickup",pickupRouter);
