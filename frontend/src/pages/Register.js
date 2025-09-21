@@ -25,7 +25,7 @@ function Register() {
     try {
       // Fetch CSRF token from backend
       const csrfRes = await fetch("http://localhost:8070/user/csrf-token", {
-        credentials: "include"
+        credentials: "include",
       });
       const csrfData = await csrfRes.json();
       const csrfToken = csrfData.csrfToken;
@@ -34,7 +34,7 @@ function Register() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "CSRF-Token": csrfToken
+          "CSRF-Token": csrfToken,
         },
         credentials: "include",
         body: JSON.stringify(registerValues),
@@ -46,7 +46,11 @@ function Register() {
         message.success("Registration successful!");
         navigate("/login");
       } else {
-        message.error(data.error || "Registration failed");
+        if (data.errors && Array.isArray(data.errors)) {
+          data.errors.forEach((err) => message.error(err.msg));
+        } else {
+          message.error(data.error || "Registration failed");
+        }
       }
     } catch (error) {
       message.error("An error occurred");
