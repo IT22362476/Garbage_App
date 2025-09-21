@@ -1,5 +1,6 @@
 // In services/collectorService.js
 import axios from "axios";
+import { withCsrf } from './csrf';
 
 const API_URL = "http://localhost:8070";
 
@@ -14,5 +15,6 @@ export const getVehicleCount = () => axios.get(`${API_URL}/vehicle/count`);
 export const getResidentRequests = () => axios.get("/api/resident-requests");
 
 // Allocate selected requests to a collector
-export const allocateRequestsToCollector = (collectorId, requestIds) =>
-  axios.post(`/api/collectors/${collectorId}/allocate`, { requests: requestIds });
+// FIX: Add CSRF token to all mutating requests
+export const allocateRequestsToCollector = async (collectorId, requestIds) =>
+  axios.post(`/api/collectors/${collectorId}/allocate`, { requests: requestIds }, await withCsrf());

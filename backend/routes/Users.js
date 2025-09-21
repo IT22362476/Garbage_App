@@ -310,21 +310,6 @@ router.get('/collectors/count', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 router.route("/get/:id").get(async (req, res) => {
   let userId = req.params.id;
   // Validate userId as integer
