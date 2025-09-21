@@ -19,31 +19,8 @@ const rateLimit = require("express-rate-limit");
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // limit each IP to 10 requests per windowMs
-  message: "Too many attempts from this IP, please try again later.",
+  message: "Too many attempts from this IP, please try again later.",
 });
-
-// router.route("/add").post((req, res) => {
-//   const name = req.body.name;
-//   const address = req.body.address;
-//   const email = req.body.email;
-//   const contact = Number(req.body.contact);
-
-//   const newUser = new User({
-//     name,
-//     address,
-//     email,
-//     contact,
-//   });
-
-//   newUser
-//     .save()
-//     .then(() => {
-//       res.json("User Added");
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// });
 
 // User login
 router.post("/login", authLimiter, async (req, res) => {
@@ -75,10 +52,11 @@ router.post("/login", authLimiter, async (req, res) => {
     );
 
     // Set the token as a secure HTTP-only cookie
+    console.log("Setting authToken cookie, NODE_ENV:", process.env.NODE_ENV);
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -86,14 +64,16 @@ router.post("/login", authLimiter, async (req, res) => {
     res.cookie("userId", user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
+    console.log("Cookies set, responding with user data");
     res.json({
       message: user.isAdmin ? "Admin Login successful" : "Login successful",
       userId: user.id,
       role: user.role,
+      token: token, // Add token to response for debugging
     });
   } catch (err) {
     console.error(err);
@@ -377,7 +357,7 @@ router.put("/updatePassword/:userID", async (req, res) => {
   // Find user by userID, verify old password, update with new password
   try {
     // Assuming you have a function to handle the password update
-    const user = await User.findById(userID);
+    const user = await User.findOne({ id: userID });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -405,15 +385,32 @@ router.post("/logout", (req, res) => {
 
 // Protected route to get current user profile
 router.get("/profile", authenticateJWT, (req, res) => {
+  try {
+    console.log("Profile route hit, user:", req.user);
+    res.json({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      address: req.user.address,
+      contact: req.user.contact,
+      role: req.user.role,
+      avatar: req.user.avatar,
+      isOAuthUser: req.user.isOAuthUser,
+    });
+  } catch (error) {
+    console.error("Error in /profile route:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Test route to debug JWT authentication
+router.get("/test-auth", authenticateJWT, (req, res) => {
+  console.log("Test auth route hit, req.user:", req.user);
   res.json({
-    id: req.user.id,
-    name: req.user.name,
-    email: req.user.email,
-    address: req.user.address,
-    contact: req.user.contact,
-    role: req.user.role,
-    avatar: req.user.avatar,
-    isOAuthUser: req.user.isOAuthUser,
+    message: "Auth test successful",
+    user: req.user,
+    userId: req.user?.id,
+    userRole: req.user?.role,
   });
 });
 

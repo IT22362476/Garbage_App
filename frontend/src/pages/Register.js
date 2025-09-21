@@ -159,7 +159,7 @@ function Register() {
 
     try {
       const result = await register(registerValues);
-      
+
       if (result.success) {
         message.success("Registration successful!");
         form.resetFields();
@@ -189,7 +189,12 @@ function Register() {
     <div className="bg-green-100 min-h-screen flex items-center justify-center">
       <div className="max-w-md mx-auto bg-white p-10 rounded-lg shadow-md w-full my-12">
         <h2 className="text-2xl font-bold mb-6">Register as {selectedRole}</h2>
-        <Form layout="vertical" onFinish={onFinish} form={form} validateTrigger="onBlur">
+        <Form
+          layout="vertical"
+          onFinish={onFinish}
+          form={form}
+          validateTrigger="onBlur"
+        >
           <Form.Item name="name" label="Name" rules={nameRules}>
             <Input
               placeholder="Enter your full name"
@@ -236,7 +241,9 @@ function Register() {
 
           {/* Password requirements info */}
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-sm font-medium text-blue-800 mb-2">Password Requirements:</p>
+            <p className="text-sm font-medium text-blue-800 mb-2">
+              Password Requirements:
+            </p>
             <ul className="text-xs text-blue-700 space-y-1">
               <li>• At least 8 characters long</li>
               <li>• Contains at least one lowercase letter (a-z)</li>
@@ -257,7 +264,7 @@ function Register() {
         </Form>
 
         <Divider>OR</Divider>
-        
+
         <Button
           type="default"
           block

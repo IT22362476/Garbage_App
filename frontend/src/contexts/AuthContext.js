@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import { getCsrfToken } from "./csrf";
 
 const AuthContext = createContext();
@@ -22,31 +21,35 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const token = Cookies.get("authToken");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
+      console.log("Checking auth status...");
       const response = await fetch("http://localhost:8070/user/profile", {
         method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        credentials: "include", // send cookies automatically
       });
 
       if (response.ok) {
-        const userData = await response.json();
+        const responseText = await response.text();
+        console.log("Profile response text:", responseText);
+
+        let userData;
+        try {
+          userData = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error("JSON parse error:", parseError);
+          return;
+        }
+
+        console.log("User data received:", userData);
+        console.log("User data type:", typeof userData);
+        console.log("User data is array:", Array.isArray(userData));
         setUser(userData);
       } else {
-        Cookies.remove("authToken");
-        Cookies.remove("userId");
+        console.log("Not authenticated");
+        setUser(null);
       }
     } catch (error) {
       console.error("Error checking auth status:", error);
-      Cookies.remove("authToken");
-      Cookies.remove("userId");
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -56,6 +59,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const csrfToken = await getCsrfToken();
+      console.log("Attempting login with CSRF token:", csrfToken);
+
       const response = await fetch("http://localhost:8070/user/login", {
         method: "POST",
         headers: {
@@ -67,19 +72,21 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
+      console.log("Login response:", response.status, data);
 
       if (response.ok) {
-        await checkAuthStatus(); // Refresh user data
+        // After successful login, fetch user profile
+        await checkAuthStatus();
         return { success: true, data };
       } else {
         return { success: false, error: data.error };
       }
     } catch (error) {
+      console.error("Login error:", error);
       return { success: false, error: "Network error" };
     }
   };
 
-  // FIX: Add CSRF token to registration request (non-OAuth)
   const register = async (userData) => {
     try {
       const csrfToken = await getCsrfToken();
@@ -94,7 +101,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-
       if (response.ok) {
         return { success: true, data };
       } else {
@@ -115,14 +121,38 @@ export const AuthProvider = ({ children }) => {
       console.error("Error during logout:", error);
     } finally {
       setUser(null);
-      Cookies.remove("authToken");
-      Cookies.remove("userId");
     }
   };
 
   const loginWithGoogle = () => {
     window.location.href = "http://localhost:8070/auth/google";
   };
+
+  // Test function to debug auth
+  const testAuth = async () => {
+    try {
+      console.log("Testing auth endpoint...");
+      const response = await fetch("http://localhost:8070/user/test-auth", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      console.log("Test auth response:", response.status, data);
+      return data;
+    } catch (error) {
+      console.error("Test auth error:", error);
+      return null;
+    }
+  };
+
+  // Make it available globally for debugging
+  if (typeof window !== "undefined") {
+    window.testAuth = testAuth;
+  }
 
   const value = {
     user,

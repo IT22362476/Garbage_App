@@ -5,8 +5,14 @@ const User = require("../models/User");
 // Debug: Check if environment variables are loaded
 console.log("Google OAuth Config:");
 console.log("CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "✓ Set" : "✗ Missing");
-console.log("CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "✓ Set" : "✗ Missing");
-console.log("CALLBACK_URL:", process.env.GOOGLE_CALLBACK_URL || "Using default");
+console.log(
+  "CLIENT_SECRET:",
+  process.env.GOOGLE_CLIENT_SECRET ? "✓ Set" : "✗ Missing"
+);
+console.log(
+  "CALLBACK_URL:",
+  process.env.GOOGLE_CALLBACK_URL || "Using default"
+);
 
 passport.use(
   new GoogleStrategy(

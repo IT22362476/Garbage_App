@@ -4,7 +4,6 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
-// Load environment variables FIRST before importing passport
 dotenv.config();
 
 const session = require("express-session");
