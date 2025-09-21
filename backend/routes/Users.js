@@ -394,8 +394,19 @@ router.put("/updatePassword/:userID", async (req, res) => {
 
 // Logout route
 router.post("/logout", (req, res) => {
-  res.clearCookie("authToken");
-  res.clearCookie("userId");
+  // Clear cookies with the same options they were set with
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  res.clearCookie("userId", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
   res.json({ message: "Logged out successfully" });
 });
 

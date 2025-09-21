@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       console.log("Checking auth status...");
       const response = await fetch("http://localhost:8070/user/profile", {
         method: "GET",
-        credentials: "include", // send cookies automatically
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -38,10 +38,6 @@ export const AuthProvider = ({ children }) => {
           console.error("JSON parse error:", parseError);
           return;
         }
-
-        console.log("User data received:", userData);
-        console.log("User data type:", typeof userData);
-        console.log("User data is array:", Array.isArray(userData));
         setUser(userData);
       } else {
         console.log("Not authenticated");
@@ -121,6 +117,16 @@ export const AuthProvider = ({ children }) => {
       console.error("Error during logout:", error);
     } finally {
       setUser(null);
+
+      // Optional: Clear any localStorage or sessionStorage if you're using them
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("user");
+
+      // Force a complete page reload to clear any remaining state
+      // This will also trigger a fresh auth check
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 100); // Small delay to ensure state is cleared
     }
   };
 

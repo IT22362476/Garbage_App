@@ -23,7 +23,7 @@ function Login() {
   useEffect(() => {
     // If user is already logged in, redirect based on role
     if (user) {
-      navigateBasedOnRole();
+      // navigateBasedOnRole();
     }
   }, [user]);
 

@@ -48,8 +48,20 @@ router.post("/logout", (req, res) => {
     if (err) {
       return res.status(500).json({ error: "Error logging out" });
     }
-    res.clearCookie("authToken");
-    res.clearCookie("userId");
+
+    // Clear cookies with the same options they were set with
+    res.clearCookie("authToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    res.clearCookie("userId", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
     res.json({ message: "Logged out successfully" });
   });
 });

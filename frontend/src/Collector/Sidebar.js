@@ -14,10 +14,10 @@ const Sidebar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login"); // Redirect to login page after logout
+      // No need to navigate manually, logout function handles the redirect
     } catch (error) {
       console.error("Error during logout:", error);
-      // Still redirect even if there's an error
+      // Fallback redirect if logout fails
       navigate("/login");
     }
   };
