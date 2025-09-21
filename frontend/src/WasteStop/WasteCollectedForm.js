@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { withCsrf } from "./csrf";
 import { Link, useNavigate } from "react-router-dom";
 
 const WasteCollectedForm = () => {
@@ -105,12 +106,18 @@ const WasteCollectedForm = () => {
     ).toFixed(2);
 
     try {
+      // FIX: Add CSRF token to the request to prevent 403 Forbidden error
+      // FIX: Convert waste fields to numbers to match backend schema and avoid 400 error
       await axios.post(
         "http://localhost:8070/collectedwaste/addCollectedWaste",
         {
           ...formData,
-          totalWaste,
-        }
+          paperWaste: Number(formData.paperWaste),
+          foodWaste: Number(formData.foodWaste),
+          polytheneWaste: Number(formData.polytheneWaste),
+          totalWaste: Number(totalWaste),
+        },
+        await withCsrf()
       );
       setFormData({
         truckNumber: "",
