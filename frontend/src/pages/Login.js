@@ -1,61 +1,60 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button, Form, Input, message, Divider } from "antd";
-import { Link, useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { FaGoogle } from "react-icons/fa";
 
 const rules = [{ required: true, message: "This field is required" }];
 
 function Login() {
-  const [cookies, setCookie] = useCookies(["userID"]);
+  const { user, login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
-  const userID = cookies.userID;
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    // Check if user came back from OAuth
+    const authStatus = searchParams.get("auth");
+    if (authStatus === "success") {
+      message.success("OAuth login successful!");
+      navigateBasedOnRole();
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    // If user is already logged in, redirect based on role
+    if (user) {
+      navigateBasedOnRole();
+    }
+  }, [user]);
+
+  const navigateBasedOnRole = () => {
+    if (!user) return;
+
+    if (user.role === "resident") {
+      navigate("/residentHome");
+    } else if (user.role === "admin") {
+      navigate("/adminHome");
+    } else if (user.role === "collector") {
+      navigate(`/CollectorHome/${user.id}`);
+    } else if (user.role === "recorder") {
+      navigate("/CollectedWasteDashboard");
+    }
+  };
   const onFinish = async (values) => {
     const { email, password } = values;
 
-    try {
-      // Fetch CSRF token from backend
-      const csrfRes = await fetch("http://localhost:8070/user/csrf-token", {
-        credentials: "include"
-      });
-      const csrfData = await csrfRes.json();
-      const csrfToken = csrfData.csrfToken;
+    const result = await login(email, password);
 
-      const response = await fetch("http://localhost:8070/user/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "CSRF-Token": csrfToken
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      console.log(data.role);
-
-      if (response.ok) {
-        message.success("Login successful!");
-        setCookie("userID", data.userId);
-
-        if (data.role === "resident") {
-          navigate("/residentHome ");
-        } else if (data.role === "admin") {
-          navigate("/adminHome");
-        } else if (data.role === "collector") {
-          navigate(`/CollectorHome/${userID}`);
-        } else if (data.role === "recorder") {
-          navigate("/CollectedWasteDashboard");
-        }
-      } else {
-        message.error(data.error || "Login failed");
-      }
-    } catch (error) {
-      message.error("An error occurred");
+    if (result.success) {
+      message.success("Login successful!");
+      navigateBasedOnRole();
+    } else {
+      message.error(result.error || "Login failed");
     }
+  };
+
+  const handleGoogleLogin = () => {
+    loginWithGoogle();
   };
 
   return (
@@ -86,6 +85,18 @@ function Login() {
             Login
           </Button>
         </Form>
+
+        <Divider>OR</Divider>
+
+        <Button
+          type="default"
+          block
+          onClick={handleGoogleLogin}
+          className="mb-4 border-gray-300 text-gray-700 flex items-center justify-center gap-2"
+        >
+          <FaGoogle className="text-red-500" />
+          Continue with Google
+        </Button>
 
         <Divider />
         <p className="text-center">
