@@ -15,7 +15,7 @@ const authorizeRoles = require("../middlewares/auth"); // Importing authorizatio
 const { body, validationResult } = require("express-validator");
 router.post(
   "/addRecyclingWastes",
-  authorizeRoles("admin", "collector"),
+  authorizeRoles("admin", "collector" , "recorder"),
   [
     body("truckNumber").isString().trim().notEmpty().withMessage("Truck number is required"),
     body("area").isString().trim().notEmpty().withMessage("Area is required"),
@@ -47,7 +47,7 @@ router.get("/getRecyclingWaste/:recycleID", getRecyclingWasteById);
 // FIX: Added express-validator to validate and sanitize input fields for update
 router.put(
   "/updateRecyclingWaste/:recycleID",
-  authorizeRoles("admin", "collector"),
+  authorizeRoles("admin", "collector" , "recorder"),
   [
     // Validate recycleID as a valid MongoDB ObjectId
     require("express-validator").param("recycleID").custom((value) => {
