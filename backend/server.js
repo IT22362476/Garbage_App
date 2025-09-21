@@ -16,6 +16,24 @@ const app = express();
 const helmet = require("helmet");
 app.use(helmet());
 
+// FIX: Added xss-clean middleware to sanitize user input and help prevent XSS attacks
+const xss = require("xss-clean");
+app.use(xss());
+
+// FIX: Enforce HTTPS in production
+app.use((req, res, next) => {
+  if (
+    process.env.NODE_ENV === "production" &&
+    req.headers["x-forwarded-proto"] !== "https"
+  ) {
+    console.log("Redirecting to HTTPS...");
+    return res.redirect("https://" + req.headers.host + req.url);
+  } else {
+    console.log("Request already considered HTTPS or not in production.");
+  }
+  next();
+});
+
 // FIX: Added CSRF protection middleware using csurf
 const cookieParser = require("cookie-parser");
 const csurf = require("csurf");
@@ -44,16 +62,32 @@ app.use(
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
-
 // Middleware
-// FIX: Configure CORS to allow credentials and restrict origin for CSRF protection
-const allowedOrigin = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+// // FIX: Configure CORS to allow credentials and restrict origin for CSRF protection
+// const allowedOrigin = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+// app.use(
+//   cors({
+//     origin: allowedOrigin,
+//     credentials: true,
+//   })
+// );
+
+// FIX: Restrict CORS to only allow specific origins
+const allowedOrigins = [process.env.CLIENT_ORIGIN || "http://localhost:3000"];
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow mobile apps, curl, etc.
+      if (allowedOrigins.indexOf(origin) === -1) {
+        console.warn("CORS policy violation from origin:", origin);
+        return callback(new Error("CORS policy violation"), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
+
 app.use(bodyParser.json());
 
 // CSRF error handler
@@ -61,6 +95,21 @@ app.use((err, req, res, next) => {
   if (err.code !== "EBADCSRFTOKEN") return next(err);
   // FIX: CSRF token errors are handled here
   res.status(403).json({ error: "Invalid CSRF token" });
+});
+
+// FIX: Add logging for failed/suspicious authentication attempts
+const fs = require("fs");
+const path = require("path");
+const logFile = path.join(__dirname, "security.log");
+
+app.use((req, res, next) => {
+  res.logSecurityEvent = (event) => {
+    const logEntry = `[${new Date().toISOString()}] ${event}\n`;
+    fs.appendFile(logFile, logEntry, (err) => {
+      if (err) console.error("Failed to write security log:", err);
+    });
+  };
+  next();
 });
 
 module.exports = app;
