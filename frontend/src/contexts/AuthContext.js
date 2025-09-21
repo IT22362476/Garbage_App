@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
+import { getCsrfToken } from "./csrf";
 
 const AuthContext = createContext();
 
@@ -51,12 +52,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // FIX: Add CSRF token to login request (non-OAuth)
   const login = async (email, password) => {
     try {
+      const csrfToken = await getCsrfToken();
       const response = await fetch("http://localhost:8070/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "CSRF-Token": csrfToken,
         },
         credentials: "include",
         body: JSON.stringify({ email, password }),
@@ -75,12 +79,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // FIX: Add CSRF token to registration request (non-OAuth)
   const register = async (userData) => {
     try {
+      const csrfToken = await getCsrfToken();
       const response = await fetch("http://localhost:8070/user/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "CSRF-Token": csrfToken,
         },
         credentials: "include",
         body: JSON.stringify(userData),
