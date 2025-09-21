@@ -81,6 +81,26 @@ router.post("/login", authLimiter, async (req, res) => {
   }
 });
 
+// Protected route to get current user profile
+router.get("/profile", authenticateJWT, (req, res) => {
+  try {
+    console.log("Profile route hit, user:", req.user);
+    res.json({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      address: req.user.address,
+      contact: req.user.contact,
+      role: req.user.role,
+      avatar: req.user.avatar,
+      isOAuthUser: req.user.isOAuthUser,
+    });
+  } catch (error) {
+    console.error("Error in /profile route:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // User registration with password hashing and input validation
 // FIX: Added express-validator to validate and sanitize registration fields
 router.post(
@@ -381,26 +401,6 @@ router.post("/logout", (req, res) => {
   res.clearCookie("authToken");
   res.clearCookie("userId");
   res.json({ message: "Logged out successfully" });
-});
-
-// Protected route to get current user profile
-router.get("/profile", authenticateJWT, (req, res) => {
-  try {
-    console.log("Profile route hit, user:", req.user);
-    res.json({
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email,
-      address: req.user.address,
-      contact: req.user.contact,
-      role: req.user.role,
-      avatar: req.user.avatar,
-      isOAuthUser: req.user.isOAuthUser,
-    });
-  } catch (error) {
-    console.error("Error in /profile route:", error);
-    res.status(500).json({ error: "Server error" });
-  }
 });
 
 // Test route to debug JWT authentication
