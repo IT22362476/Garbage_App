@@ -1,41 +1,52 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import Sidebar from './Sidebar';
-import { useCookies } from 'react-cookie';
-import { AiOutlineUser } from 'react-icons/ai'; // You can install this package for icons
+import Sidebar from "./Sidebar";
+import { useCookies } from "react-cookie";
+import { AiOutlineUser } from "react-icons/ai"; // You can install this package for icons
+import { useAuth } from "../contexts/AuthContext";
 
 const CollectorHome = () => {
   const [approvedPickups, setApprovedPickups] = useState([]);
   const [cookies] = useCookies(["userID"]);
+  const { logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown visibility
 
   useEffect(() => {
     // Fetch the approved pickups for the logged-in user
-    axios.get(`http://localhost:8070/approvedpickup/getapproved/${cookies.userID}`)
+    axios
+      .get(`http://localhost:8070/approvedpickup/getapproved/${cookies.userID}`)
       .then((response) => {
         setApprovedPickups(response.data);
       })
       .catch((error) => {
-        console.error('There was an error fetching the approved pickups!', error);
+        console.error(
+          "There was an error fetching the approved pickups!",
+          error
+        );
       });
   }, [cookies.userID]); // Ensure the effect runs when the user ID changes
 
   const handleCompletion = (index) => {
     const updatedPickups = [...approvedPickups];
-    updatedPickups[index].status = updatedPickups[index].status === 'Completed' ? 'Pending' : 'Completed';
+    updatedPickups[index].status =
+      updatedPickups[index].status === "Completed" ? "Pending" : "Completed";
 
     // Make an API call to update the status in the backend
-    axios.post(`http://localhost:8070/approvedpickup/update/${updatedPickups[index]._id}`, {
-      status: updatedPickups[index].status
-    })
-    .then((response) => {
-      console.log('Pickup status updated!', response);
-      setApprovedPickups(updatedPickups);
-    })
-    .catch((error) => {
-      console.error('There was an error updating the pickup status!', error);
-    });
+    axios
+      .post(
+        `http://localhost:8070/approvedpickup/update/${updatedPickups[index]._id}`,
+        {
+          status: updatedPickups[index].status,
+        }
+      )
+      .then((response) => {
+        console.log("Pickup status updated!", response);
+        setApprovedPickups(updatedPickups);
+      })
+      .catch((error) => {
+        console.error("There was an error updating the pickup status!", error);
+      });
   };
   const navigate = useNavigate();
 
@@ -43,8 +54,8 @@ const CollectorHome = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
-  const handleLogout = () => {
-    navigate("/logout");
+  const handleLogout = async () => {
+    await logout();
   };
 
   const handleProfile = () => {
@@ -57,7 +68,9 @@ const CollectorHome = () => {
 
       <div className="bg-green-100 min-h-screen flex flex-col flex-grow">
         <div className="flex justify-between items-center p-4">
-          <h1 className="text-3xl font-bold text-green-800">Approved Garbage Pickups</h1>
+          <h1 className="text-3xl font-bold text-green-800">
+            Approved Garbage Pickups
+          </h1>
           <div className="relative">
             <button onClick={toggleDropdown} className="focus:outline-none">
               <AiOutlineUser className="h-8 w-8 text-green-800" />
@@ -65,8 +78,18 @@ const CollectorHome = () => {
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
                 <ul className="py-2">
-                  <li onClick={handleProfile} className="px-4 py-2 hover:bg-green-200 cursor-pointer">Profile</li>
-                  <li onClick={handleLogout} className="px-4 py-2 hover:bg-green-200 cursor-pointer">Logout</li>
+                  <li
+                    onClick={handleProfile}
+                    className="px-4 py-2 hover:bg-green-200 cursor-pointer"
+                  >
+                    Profile
+                  </li>
+                  <li
+                    onClick={handleLogout}
+                    className="px-4 py-2 hover:bg-green-200 cursor-pointer"
+                  >
+                    Logout
+                  </li>
                 </ul>
               </div>
             )}
@@ -78,11 +101,21 @@ const CollectorHome = () => {
             <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
               <thead className="bg-green-600">
                 <tr>
-                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">User ID</th>
-                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">Date</th>
-                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">Time</th>
-                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">Location</th>
-                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">Status</th>
+                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">
+                    User ID
+                  </th>
+                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">
+                    Date
+                  </th>
+                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">
+                    Time
+                  </th>
+                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">
+                    Location
+                  </th>
+                  <th className="py-3 px-6 text-left text-white font-semibold uppercase">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -95,7 +128,7 @@ const CollectorHome = () => {
                     <td className="py-3 px-6">
                       <input
                         type="checkbox"
-                        checked={pickup.status === 'Completed'}
+                        checked={pickup.status === "Completed"}
                         onChange={() => handleCompletion(index)}
                         className="h-4 w-4 text-green-600"
                       />
@@ -106,7 +139,9 @@ const CollectorHome = () => {
               </tbody>
             </table>
           ) : (
-            <div className="text-green-700 text-lg">No approved pickups found.</div>
+            <div className="text-green-700 text-lg">
+              No approved pickups found.
+            </div>
           )}
         </div>
       </div>
