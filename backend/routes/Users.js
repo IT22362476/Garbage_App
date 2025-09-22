@@ -1,11 +1,6 @@
 const bcrypt = require("bcryptjs");
 const router = require("express").Router();
-const {
-  body,
-  param,
-  validationResult,
-  normalizeEmail,
-} = require("express-validator");
+const { body, param, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { authenticateJWT } = require("../middlewares/jwtAuth");
