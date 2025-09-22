@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import { useCookies } from "react-cookie";
 import { AiOutlineUser } from "react-icons/ai"; // You can install this package for icons
 import { useAuth } from "../contexts/AuthContext";
 
 const CollectorHome = () => {
   const [approvedPickups, setApprovedPickups] = useState([]);
-  const [cookies] = useCookies(["userID"]);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown visibility
 
   useEffect(() => {
     // Fetch the approved pickups for the logged-in user
     axios
-      .get(`http://localhost:8070/approvedpickup/getapproved/${cookies.userID}`)
+      .get(`http://localhost:8070/approvedpickup/getapproved/${user.id}`)
       .then((response) => {
         setApprovedPickups(response.data);
       })
@@ -25,7 +23,7 @@ const CollectorHome = () => {
           error
         );
       });
-  }, [cookies.userID]); // Ensure the effect runs when the user ID changes
+  }, [user.id]); // Ensure the effect runs when the user ID changes
 
   const handleCompletion = (index) => {
     const updatedPickups = [...approvedPickups];
@@ -59,7 +57,7 @@ const CollectorHome = () => {
   };
 
   const handleProfile = () => {
-    navigate(`/Profile/${cookies.userID}`);
+    navigate(`/Profile/${user.id}`);
   };
 
   return (
