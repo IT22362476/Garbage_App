@@ -35,9 +35,10 @@ function ManageCollectors() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100">
       <AdminNav />
-      <div className="flex-grow p-8 bg-white shadow-md rounded-lg">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-8 bg-white shadow-md rounded-lg m-4">
         <h1 className="text-2xl font-bold mb-6">Manage Collectors</h1>
 
         {/* Collectors Section */}
@@ -86,6 +87,7 @@ function ManageCollectors() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>

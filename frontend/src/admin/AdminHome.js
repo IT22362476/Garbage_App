@@ -50,10 +50,10 @@ function AdminHome() {
   ];
 
   return (
-    <div>
-      <div className="flex">
-        <AdminNav />
-        <div className="w-full p-6">
+    <div className="flex h-screen">
+      <AdminNav />
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6">
           <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
           {/* Statistics Section */}

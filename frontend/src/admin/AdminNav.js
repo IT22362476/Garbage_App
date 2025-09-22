@@ -25,7 +25,7 @@ const AdminNav = () => {
   };
 
   return (
-    <div className="min-h-screen bg-green-800 text-white w-64 flex flex-col">
+    <div className="h-screen bg-green-800 text-white w-64 flex flex-col">
       <div className="text-2xl font-bold py-4 px-6 bg-green-700">EcoSmart</div>
       <nav className="mt-10 flex-grow">
         <ul className="flex flex-col">

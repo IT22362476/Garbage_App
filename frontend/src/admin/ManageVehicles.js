@@ -80,143 +80,147 @@ function ManageVehicles() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100">
       <AdminNav />
-      <div className="flex-grow p-8 bg-white shadow-md rounded-lg">
-        <h1 className="text-3xl font-bold text-gray-700 mb-8">
-          Vehicle Management
-        </h1>
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-8 bg-white shadow-md rounded-lg m-4">
+          <h1 className="text-3xl font-bold text-gray-700 mb-8">
+            Vehicle Management
+          </h1>
 
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-600 mb-4">
-            Add Vehicle
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <input
-                className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                name="name"
-                placeholder="Name"
-                value={newVehicle.name}
-                onChange={handleChange}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm">{errors.name}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                name="brand"
-                placeholder="Brand"
-                value={newVehicle.brand}
-                onChange={handleChange}
-              />
-              {errors.brand && (
-                <p className="text-red-500 text-sm">{errors.brand}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                name="year"
-                placeholder="Year"
-                value={newVehicle.year}
-                onChange={handleChange}
-              />
-              {errors.year && (
-                <p className="text-red-500 text-sm">{errors.year}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                name="price"
-                placeholder="Price"
-                value={newVehicle.price}
-                onChange={handleChange}
-              />
-              {errors.price && (
-                <p className="text-red-500 text-sm">{errors.price}</p>
-              )}
-            </div>
-          </div>
-          <button
-            className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-600"
-            onClick={handleCreate}
-          >
-            Create Vehicle
-          </button>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold text-gray-600 mb-4">
-            Vehicle List
-          </h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {vehicles.map((vehicle) => (
-              <div
-                key={vehicle._id}
-                className="p-6 bg-white border border-gray-200 rounded-lg shadow-md"
-              >
-                {editingVehicle && editingVehicle._id === vehicle._id ? (
-                  <div className="space-y-4">
-                    <input
-                      className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      name="name"
-                      value={editingVehicle.name}
-                      onChange={(e) =>
-                        setEditingVehicle({
-                          ...editingVehicle,
-                          name: e.target.value,
-                        })
-                      }
-                    />
-                    <div className="flex space-x-2">
-                      <button
-                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                        onClick={() => handleUpdate(vehicle._id)}
-                      >
-                        Update
-                      </button>
-                      <button
-                        className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                        onClick={() => setEditingVehicle(null)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col justify-between space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {vehicle.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">{vehicle.brand}</p>
-                      <p className="text-sm text-gray-600">{vehicle.isAvailable}</p>
-                    </div>
-                    <div className="flex justify-between">
-                      <button
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={() => setEditingVehicle(vehicle)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                        onClick={() => handleDelete(vehicle._id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-600 mb-4">
+              Add Vehicle
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <input
+                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  name="name"
+                  placeholder="Name"
+                  value={newVehicle.name}
+                  onChange={handleChange}
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-sm">{errors.name}</p>
                 )}
               </div>
-            ))}
+
+              <div>
+                <input
+                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  name="brand"
+                  placeholder="Brand"
+                  value={newVehicle.brand}
+                  onChange={handleChange}
+                />
+                {errors.brand && (
+                  <p className="text-red-500 text-sm">{errors.brand}</p>
+                )}
+              </div>
+
+              <div>
+                <input
+                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  name="year"
+                  placeholder="Year"
+                  value={newVehicle.year}
+                  onChange={handleChange}
+                />
+                {errors.year && (
+                  <p className="text-red-500 text-sm">{errors.year}</p>
+                )}
+              </div>
+
+              <div>
+                <input
+                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  name="price"
+                  placeholder="Price"
+                  value={newVehicle.price}
+                  onChange={handleChange}
+                />
+                {errors.price && (
+                  <p className="text-red-500 text-sm">{errors.price}</p>
+                )}
+              </div>
+            </div>
+            <button
+              className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-600"
+              onClick={handleCreate}
+            >
+              Create Vehicle
+            </button>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold text-gray-600 mb-4">
+              Vehicle List
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {vehicles.map((vehicle) => (
+                <div
+                  key={vehicle._id}
+                  className="p-6 bg-white border border-gray-200 rounded-lg shadow-md"
+                >
+                  {editingVehicle && editingVehicle._id === vehicle._id ? (
+                    <div className="space-y-4">
+                      <input
+                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        name="name"
+                        value={editingVehicle.name}
+                        onChange={(e) =>
+                          setEditingVehicle({
+                            ...editingVehicle,
+                            name: e.target.value,
+                          })
+                        }
+                      />
+                      <div className="flex space-x-2">
+                        <button
+                          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                          onClick={() => handleUpdate(vehicle._id)}
+                        >
+                          Update
+                        </button>
+                        <button
+                          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                          onClick={() => setEditingVehicle(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col justify-between space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          {vehicle.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">{vehicle.brand}</p>
+                        <p className="text-sm text-gray-600">
+                          {vehicle.isAvailable}
+                        </p>
+                      </div>
+                      <div className="flex justify-between">
+                        <button
+                          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          onClick={() => setEditingVehicle(vehicle)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                          onClick={() => handleDelete(vehicle._id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -226,15 +230,12 @@ function ManageVehicles() {
 
 export default ManageVehicles;
 
-
-
 //ManageVehicles.js
 
 // import React from "react";
 // import AdminNav from "./AdminNav";
 
 // function ManageVehicles() {
- 
 
 //   return (
 //     <div className="flex">
@@ -247,9 +248,6 @@ export default ManageVehicles;
 // }
 //
 // export default ManageVehicles;
-
-
-
 
 // import React, { useState } from 'react';
 // import axios from 'axios'; // For making API requests (assuming a backend API)

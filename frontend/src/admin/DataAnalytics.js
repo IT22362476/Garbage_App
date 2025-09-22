@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNav from "./AdminNav";
 import { Pie, Bar } from "react-chartjs-2";
 import axios from "axios";
-import 'chart.js/auto';
+import "chart.js/auto";
 
 function DataAnalytics() {
   const [garbageData, setGarbageData] = useState([]);
@@ -11,18 +11,20 @@ function DataAnalytics() {
 
   useEffect(() => {
     // Fetch garbage data from the API
-    axios.get("http://localhost:8070/garbage/getAllGarbage")
+    axios
+      .get("http://localhost:8070/garbage/getAllGarbage")
       .then((response) => {
         const data = response.data;
         setGarbageData(data);
-        
+
         // Process data for charts
         const categoryMap = {};
         data.forEach((item) => {
           const month = new Date(item.date).getMonth();
           const currentMonth = new Date().getMonth();
-          
-          if (month === currentMonth) { // Filter for the current month
+
+          if (month === currentMonth) {
+            // Filter for the current month
             if (!categoryMap[item.category]) {
               categoryMap[item.category] = 0;
             }
@@ -48,7 +50,13 @@ function DataAnalytics() {
       {
         label: "Garbage Category Weight Distribution",
         data: weights,
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+        backgroundColor: [
+          "#FF6384",
+          "#36A2EB",
+          "#FFCE56",
+          "#4BC0C0",
+          "#9966FF",
+        ],
         hoverOffset: 4,
       },
     ],
@@ -69,31 +77,29 @@ function DataAnalytics() {
   };
 
   return (
-    <div className="bg-green-100 min-h-screen">
-      <div className="flex">
-        <AdminNav />
-        <div className="flex-grow p-8">
-          <h1 className="text-3xl font-semibold text-center mb-6 text-gray-800">Data Analytics</h1>
-          
-          <div className="bg-white shadow-lg rounded-lg p-6 mx-auto max-w-4xl">
-            <h2 className="text-2xl font-semibold text-gray-700 text-center mb-4">
-              Garbage Collection Weight by Category (This Month)
-            </h2>
+    <div className="bg-green-100 h-screen flex">
+      <AdminNav />
+      <div className="flex-1 overflow-y-auto">
+        <h1 className="text-3xl font-semibold text-center mb-6 text-gray-800">
+          Data Analytics
+        </h1>
 
-            {/* Flex container for two columns */}
-            <div className="flex flex-wrap justify-between items-center mb-8">
-              
-              {/* Pie Chart */}
-              <div className="w-full md:w-1/2 p-4">
-                <Pie data={pieData} />
-              </div>
+        <div className="bg-white shadow-lg rounded-lg p-6 mx-auto max-w-4xl">
+          <h2 className="text-2xl font-semibold text-gray-700 text-center mb-4">
+            Garbage Collection Weight by Category (This Month)
+          </h2>
 
-              {/* Bar Chart */}
-              <div className="w-full md:w-1/2 p-4">
-                <Bar data={barData} />
-              </div>
+          {/* Flex container for two columns */}
+          <div className="flex flex-wrap justify-between items-center mb-8">
+            {/* Pie Chart */}
+            <div className="w-full md:w-1/2 p-4">
+              <Pie data={pieData} />
             </div>
 
+            {/* Bar Chart */}
+            <div className="w-full md:w-1/2 p-4">
+              <Bar data={barData} />
+            </div>
           </div>
         </div>
       </div>
