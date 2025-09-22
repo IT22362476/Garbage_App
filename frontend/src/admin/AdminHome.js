@@ -34,14 +34,12 @@ function AdminHome() {
 
   const fetchVehicleCount = async () => {
     const response = await getVehicleCount();
-    console.log(response.data.count);
     setVehicleCount(response.data.count);
   };
 
   const fetchResidentRequests = async () => {
     const response = await getResidentRequests(); // Fetch resident requests
     setResidentRequests(response.data);
-    console.log(response.data);
   };
 
   const recentRequests = [

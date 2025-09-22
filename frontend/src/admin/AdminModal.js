@@ -24,9 +24,6 @@ function Modal({ isOpen, onClose, request }) {
         truckid: selectedTruck,
       };
 
-      // console.log("Data to send:", data);
-      console.log("Request ID:", request._id);
-
       // Send a request to allocate the collector
       const response = await addPickup(data); // Ensure addPickup is defined correctly in your service
       if (response) {

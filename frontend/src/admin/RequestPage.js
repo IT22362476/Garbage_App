@@ -32,7 +32,6 @@ function RequestPage() {
 
   // Function to handle the "View" button click
   const handleViewClick = (request) => {
-    console.log("Viewing request:", request);
     setSelectedRequest(request); // Set the selected request
     setIsModalOpen(true); // Open the modal
   };
