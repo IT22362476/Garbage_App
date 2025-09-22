@@ -1,15 +1,13 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
 import { useAuth } from "../contexts/AuthContext";
 
 const Sidebar = () => {
-  const [cookies] = useCookies(["userID"]);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   // Fallback to ensure userID is defined
-  const userId = cookies.userID || "";
+  const userId = user.id || "";
 
   const handleLogout = async () => {
     try {
