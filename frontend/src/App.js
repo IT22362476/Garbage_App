@@ -49,7 +49,14 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<UserTypeSelection />} />
             <Route path="/register2" element={<Register />} />
-            <Route path="/logout" element={<Logout />} />
+            <Route
+              path="/logout"
+              element={
+                <ProtectedRoute>
+                  <Logout />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/dashboard"
               element={
@@ -59,21 +66,18 @@ function App() {
               }
             />
             <Route path="/oauth/callback" element={<OAuthCallback />} />
-            <Route
-              path="/residentHome"
-              element={
-                <ProtectedRoute requiredRole="resident">
-                  <HomePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/schedule-pickup" element={<SchedulePickupPage />} />
-            <Route
-              path="/add-garbage-details"
-              element={<AddGarbageDetailsPage />}
-            />
-            <Route path="/confirmation" element={<ConfirmationPage />} />
-            <Route path="/MyRequestsPage" element={<MyRequestsPage />} />
+
+            <Route element={<ProtectedRoute requiredRole="resident" />}>
+              <Route path="/residentHome" element={<HomePage />} />
+              <Route path="/schedule-pickup" element={<SchedulePickupPage />} />
+              <Route
+                path="/add-garbage-details"
+                element={<AddGarbageDetailsPage />}
+              />
+              <Route path="/confirmation" element={<ConfirmationPage />} />
+              <Route path="/MyRequestsPage" element={<MyRequestsPage />} />
+            </Route>
+
             <Route path="/collectedWaste" element={<CollectedWasteHome />} />
             <Route
               path="/viewCollectedWaste"
@@ -94,13 +98,11 @@ function App() {
             <Route path="/requestPage" element={<RequestPage />} />
             <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
             <Route path="/TotalGarbage" element={<TotalGarbage />} />
-            <Route path="/Logout" element={<Logout />} />
 
             <Route path="/Profile" element={<ProfileRes />} />
 
             <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
             <Route path="/TotalGarbage" element={<TotalGarbage />} />
-            <Route path="/logout" element={<Logout />} />
             <Route path="/Profile/:userID" element={<Profile />} />
 
             <Route
@@ -120,9 +122,7 @@ function App() {
             <Route path="/manageVehicles" element={<ManageVehicles />} />
             <Route path="/manageCollectors" element={<ManageCollectors />} />
 
-            <Route path="/admin" element={<Admin />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
-            {/* 404 Not Found route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

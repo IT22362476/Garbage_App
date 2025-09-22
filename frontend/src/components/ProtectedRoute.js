@@ -1,9 +1,9 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Spin } from "antd";
 
-const ProtectedRoute = ({ children, requiredRole = null }) => {
+const ProtectedRoute = ({ requiredRole = null }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -18,11 +18,11 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user.role !== requiredRole) {
+  if (user.role.toLowerCase() !== requiredRole.toLowerCase()) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  return children;
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
