@@ -30,7 +30,7 @@ const AdminNav = () => {
       <nav className="mt-10 flex-grow">
         <ul className="flex flex-col">
           <li className="mb-4">
-            <Link to="/AdminHome" className={getLinkClassName("/AdminHome")}>
+            <Link to="/adminHome" className={getLinkClassName("/adminHome")}>
               Home
             </Link>
           </li>
