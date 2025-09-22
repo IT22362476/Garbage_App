@@ -36,6 +36,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OAuthCallback from "./components/OAuthCallback";
 import Dashboard from "./pages/Dashboard";
+import Unauthorized from "./pages/Unauthorized";
 
 function App() {
   return (
@@ -120,6 +121,7 @@ function App() {
             <Route path="/manageCollectors" element={<ManageCollectors />} />
 
             <Route path="/admin" element={<Admin />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
             {/* 404 Not Found route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
