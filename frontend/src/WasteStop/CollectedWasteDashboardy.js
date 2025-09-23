@@ -1,17 +1,9 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { FaTrashAlt, FaRecycle, FaSearch, FaClipboardList, FaDollarSign, FaChartBar } from 'react-icons/fa';
 import WasteHeader from './WasteHeader';
 
 const CollectedWasteDashboard = () => {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
 
   const cardData = [
     {
@@ -74,21 +66,6 @@ const CollectedWasteDashboard = () => {
           ))}
         </div>
 
-
-        {/* Add New Record Button */}
-        <Link to="/collectedWaste">
-          <button className="mt-8 px-6 py-3 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-full shadow-md hover:shadow-lg hover:bg-gradient-to-l transition duration-300 ease-in-out">
-            Add New Record
-          </button>
-        </Link>
-
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="mt-4 px-6 py-3 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition duration-300 ease-in-out"
-        >
-          Logout
-        </button>
 
         {/* Footer */}
         <footer className="mt-auto py-6 text-center">
