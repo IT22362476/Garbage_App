@@ -23,60 +23,76 @@ const authLimiter = rateLimit({
 });
 
 // User login
-router.post("/login", authLimiter, async (req, res) => {
-  const { email, password } = req.body;
-  // Validate email format and sanitize input
-  if (typeof email !== "string" || !/^\S+@\S+\.\S+$/.test(email)) {
-    // FIX: Added email validation to prevent NoSQL injection
-    return res.status(400).json({ error: "Invalid email format" });
-  }
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: "Not Registered, re-register" });
-    }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
+router.post(
+  "/login",
+  authLimiter,
+  [
+    body("email")
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Valid email is required"),
+    body("password").isString().notEmpty().withMessage("Password is required"),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    // Create JWT token
-    const token = jwt.sign(
-      {
+    const { email, password } = req.body;
+
+    try {
+      console.log("Login attempt for normalized email:", email);
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(401).json({ error: "Not Registered, re-register" });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Create JWT token
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
+
+      // Auth cookie
+      res.cookie("authToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      // User cookie
+      res.cookie("userId", user.id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+
+      res.json({
+        message:
+          user.role === "admin" ? "Admin Login successful" : "Login successful",
         userId: user.id,
-        email: user.email,
         role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
-
-    // Set the token as a secure HTTP-only cookie
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    // FIX: Set authentication cookie with httpOnly and secure flags
-    res.cookie("userId", user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
-
-    res.json({
-      message: user.isAdmin ? "Admin Login successful" : "Login successful",
-      userId: user.id,
-      role: user.role,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error logging in" });
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Error logging in" });
+    }
   }
-});
+);
 
 // Protected route to get current user profile
 router.get("/profile", authenticateJWT, (req, res) => {

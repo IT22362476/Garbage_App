@@ -1,16 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const TotalGarbage = require("../models/Totalgarbage"); // Import your TotalGarbage model
-const authorizeRoles = require("../middlewares/auth"); // Importing authorization middleware
+const { authenticateJWT, authorizeRoles } = require("../middlewares/jwtAuth");
 
 // POST route to save total garbage data
 // Add total garbage (admin or collector only)
+// SECURITY FIX: Added authenticateJWT middleware
 router.post(
   "/total-garbages",
+  authenticateJWT,
   authorizeRoles("admin", "collector"),
   async (req, res) => {
     try {
       const { userId, totals } = req.body;
+
+      // SECURITY FIX: Validate user can only create records for themselves (unless admin)
+      if (req.user.role !== "admin" && req.user.id !== parseInt(userId)) {
+        return res
+          .status(403)
+          .json({ error: "You can only create records for yourself" });
+      }
 
       // Create a new TotalGarbage document
       const newTotalGarbage = new TotalGarbage({
