@@ -82,6 +82,12 @@ npm start
 * Passwords hashed with **bcrypt**
 * Contact numbers encrypted with **AES-256-CBC**
 * CSRF tokens required for **POST/PUT/DELETE** requests
+* **OAUth /OpenID** setup
+* **Encriptions**
+* **Brute-false** limitations
+* **noSQL injection** limitations
+* XSS protections
+* **JWT Tokens**
 
 ---
 
