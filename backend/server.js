@@ -1,3 +1,4 @@
+
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -14,6 +15,11 @@ const app = express();
 // Helmet helps secure Express apps by setting various HTTP headers
 const helmet = require("helmet");
 app.use(helmet());
+
+// Simple root route for testing Helmet security headers
+app.get('/', (req, res) => {
+  res.send('API running. Helmet security headers are active.');
+});
 
 // FIX: Added xss-clean middleware to sanitize user input and help prevent XSS attacks
 const xss = require("xss-clean");
