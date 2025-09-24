@@ -1,3 +1,4 @@
+// Contact number encryption/decryption is handled automatically by User model.
 // In controllers/collectorController.js
 
 const User = require("../models/User"); // User model

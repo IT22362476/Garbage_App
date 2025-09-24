@@ -79,18 +79,17 @@ router.post("/login", authLimiter, async (req, res) => {
 });
 
 // Protected route to get current user profile
-router.get("/profile", authenticateJWT, (req, res) => {
+router.get("/profile", authenticateJWT, async (req, res) => {
   try {
-    res.json({
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email,
-      address: req.user.address,
-      contact: req.user.contact,
-      role: req.user.role,
-      avatar: req.user.avatar,
-      isOAuthUser: req.user.isOAuthUser,
-    });
+    // The contact number is automatically decrypted by the User model getter
+    let userDoc = req.user;
+    // If req.user is a plain object, fetch from DB for getters
+    if (!userDoc.toObject) {
+      const User = require("../models/User");
+      userDoc = await User.findById(req.user._id);
+    }
+    // toObject({ getters: true }) ensures decrypted contact is returned
+    res.json(userDoc.toObject({ getters: true }));
   } catch (error) {
     console.error("Error in /profile route:", error);
     res.status(500).json({ error: "Server error" });
@@ -143,11 +142,12 @@ router.post(
     const { name, address, email, contact, password, role } = req.body;
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
+      // Contact number will be encrypted by User model setter
       const newUser = new User({
         name,
         address,
         email,
-        contact,
+        contact, // plain contact number, encrypted before save
         password: hashedPassword,
         role,
       });
@@ -280,6 +280,7 @@ router.post(
       user.name = name || user.name;
       user.address = address || user.address;
       user.email = email || user.email;
+      // Contact number will be encrypted by User model setter
       user.contact = contact || user.contact;
       await user.save();
       res.json({ message: "Profile updated successfully." });

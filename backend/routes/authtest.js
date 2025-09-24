@@ -24,6 +24,7 @@ describe("Auth API", () => {
 
   console.log("MongoDB connection state:", mongoose.connection.readyState);
 
+  // Contact number will be encrypted by User model setter
   const mockUserData = {
     name: "Test name",
     address: "Test address",
@@ -51,12 +52,13 @@ describe("Auth API", () => {
 
     it("should not register a user with an existing email", async () => {
       const user = new User({
-        name: "Test name",
-        address: "Test address",
-        email: "test1200@gmail.com",
-        contact: "1234567890",
-        password: "password123",
-        role: "resident",
+  name: "Test name",
+  address: "Test address",
+  email: "test1200@gmail.com",
+  // Contact number will be encrypted by User model setter
+  contact: "1234567890",
+  password: "password123",
+  role: "resident",
       });
       await user.save();
 
