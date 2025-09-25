@@ -39,9 +39,9 @@ passport.use(
         const newUser = new User({
           name: profile.displayName,
           email: profile.emails[0].value,
-          address: "Not provided", // Default value, user can update later
-          contact: "Not provided", // Default value, user can update later
-          role: "resident", // Default role for OAuth users
+          address: "Not provided",
+          contact: "Not provided",
+          role: "resident",
           googleId: profile.id,
           avatar: profile.photos[0].value,
           isOAuthUser: true,
