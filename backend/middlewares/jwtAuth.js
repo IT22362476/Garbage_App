@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET || "secret-key";
 
 // JWT authentication middleware
 const authenticateJWT = async (req, res, next) => {
@@ -16,7 +16,6 @@ const authenticateJWT = async (req, res, next) => {
 
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // Use findOne with the custom id field instead of findById
     const user = await User.findOne({ id: decoded.userId }).select("-password");
 
     if (!user) {
@@ -27,7 +26,6 @@ const authenticateJWT = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error("JWT auth error:", error);
     return res.status(403).json({ error: "Invalid token." });
   }
 };
@@ -53,10 +51,14 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
-// Role-based access control middleware (updated to work with JWT)
+// Role-based access control middleware
 function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
-    const userRole = req.user?.role || req.headers["x-role"];
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const userRole = req.user.role;
     if (!userRole || !allowedRoles.includes(userRole)) {
       return res.status(403).json({ message: "Forbidden: insufficient role" });
     }

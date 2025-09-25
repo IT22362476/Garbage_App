@@ -1,21 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const Vehicle = require("../models/Vehicle");
-const authorizeRoles = require("../middlewares/auth"); // Importing authorization middleware
-
+const { authenticateJWT, authorizeRoles } = require("../middlewares/jwtAuth");
 
 // Add a new vehicle (admin only) with input validation and sanitization
 // FIX: Added express-validator to validate and sanitize input fields
 const { body, validationResult } = require("express-validator");
 router.post(
   "/addVehicle",
+  authenticateJWT,
   authorizeRoles("admin"),
   [
-    body("truckNo").isString().trim().notEmpty().withMessage("Truck number is required"),
+    body("truckNo")
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage("Truck number is required"),
     body("name").isString().trim().notEmpty().withMessage("Name is required"),
     body("area").isString().trim().notEmpty().withMessage("Area is required"),
     body("owner").isString().trim().notEmpty().withMessage("Owner is required"),
-    body("year").isInt({ min: 1900, max: new Date().getFullYear() }).withMessage("Year must be a valid integer"),
+    body("year")
+      .isInt({ min: 1900, max: new Date().getFullYear() })
+      .withMessage("Year must be a valid integer"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -36,22 +42,31 @@ router.post(
 );
 
 // Get all vehicles
-router.get("/allVehicles", async (req, res) => {
-  try {
-    const vehicles = await Vehicle.find();
-    res.json(vehicles);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+// SECURITY FIX: Added authentication and role-based access
+router.get(
+  "/allVehicles",
+  authenticateJWT,
+  authorizeRoles("admin", "collector"),
+  async (req, res) => {
+    try {
+      const vehicles = await Vehicle.find();
+      res.json(vehicles);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
 // Import express-validator for input validation
-const { param, validationResult } = require("express-validator");
+const { param } = require("express-validator");
 
 // Get a specific vehicle by ID
 // Validate the vehicle ID to prevent NoSQL injection attacks
+// SECURITY FIX: Added authentication and role-based access
 router.get(
   "/Vehicle/:id",
+  authenticateJWT,
+  authorizeRoles("admin", "collector"),
   // Only allow valid MongoDB ObjectId format
   param("id").custom((value) => {
     if (!/^[a-fA-F0-9]{24}$/.test(value)) {
@@ -79,11 +94,12 @@ router.get(
   }
 );
 
-
 // Update a vehicle by ID (admin only) with input validation and sanitization
 // FIX: Added express-validator to validate and sanitize input fields for update
+// SECURITY FIX: Added authenticateJWT middleware
 router.put(
   "/updateVehicle/:id",
+  authenticateJWT,
   authorizeRoles("admin"),
   [
     // Validate id as a valid MongoDB ObjectId
@@ -94,11 +110,34 @@ router.put(
       return true;
     }),
     // Only allow specific fields to be updated
-    body("truckNo").optional().isString().trim().notEmpty().withMessage("Truck number must be a non-empty string"),
-    body("name").optional().isString().trim().notEmpty().withMessage("Name must be a non-empty string"),
-    body("area").optional().isString().trim().notEmpty().withMessage("Area must be a non-empty string"),
-    body("owner").optional().isString().trim().notEmpty().withMessage("Owner must be a non-empty string"),
-    body("year").optional().isInt({ min: 1900, max: new Date().getFullYear() }).withMessage("Year must be a valid integer"),
+    body("truckNo")
+      .optional()
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage("Truck number must be a non-empty string"),
+    body("name")
+      .optional()
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage("Name must be a non-empty string"),
+    body("area")
+      .optional()
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage("Area must be a non-empty string"),
+    body("owner")
+      .optional()
+      .isString()
+      .trim()
+      .notEmpty()
+      .withMessage("Owner must be a non-empty string"),
+    body("year")
+      .optional()
+      .isInt({ min: 1900, max: new Date().getFullYear() })
+      .withMessage("Year must be a valid integer"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -111,7 +150,7 @@ router.put(
     const allowedFields = ["truckNo", "name", "area", "owner", "year"];
     const updateData = {};
     for (const key of allowedFields) {
-      if (Object.prototype.hasOwnProperty.call(req.body, key)) {
+      if (Object.hasOwn(req.body, key)) {
         updateData[key] = req.body[key];
       }
     }
@@ -132,8 +171,10 @@ router.put(
 // Delete a vehicle by ID
 // Delete a vehicle by ID with input validation to prevent NoSQL injection
 // Delete a vehicle by ID (admin only)
+// SECURITY FIX: Added authenticateJWT middleware
 router.delete(
   "/deleteVehicle/:id",
+  authenticateJWT,
   authorizeRoles("admin"),
   async (req, res) => {
     const { id } = req.params;

@@ -3,9 +3,12 @@
 
 module.exports = function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
-    // Assume req.user is set after authentication (e.g., JWT or session)
-    // For demo, allow role from req.headers['x-role'] if no auth system
-    const userRole = req.user?.role || req.headers["x-role"];
+    // SECURITY FIX: Remove dangerous header fallback - only use authenticated user
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    const userRole = req.user.role;
     if (!userRole || !allowedRoles.includes(userRole)) {
       return res.status(403).json({ message: "Forbidden: insufficient role" });
     }

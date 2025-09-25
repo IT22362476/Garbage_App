@@ -100,7 +100,7 @@ const userSchema = new Schema({
   openidId: {
     type: String,
     sparse: true, // Allows null values but ensures uniqueness when present
-    comment: "Stores OpenID Connect subject identifier"
+    comment: "Stores OpenID Connect subject identifier",
   },
   avatar: {
     type: String,
@@ -121,8 +121,8 @@ const userSchema = new Schema({
 
 userSchema.plugin(AutoIncrement, { inc_field: "id" });
 
-userSchema.set('toObject', { getters: true });
-userSchema.set('toJSON', { getters: true });
+userSchema.set("toObject", { getters: true });
+userSchema.set("toJSON", { getters: true });
 
 const User = mongoose.model("User", userSchema);
 
