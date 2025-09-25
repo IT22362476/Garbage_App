@@ -22,6 +22,26 @@ const authLimiter = rateLimit({
   message: "Too many attempts from this IP, please try again later.",
 });
 
+// Logout route
+router.post("/logout", (req, res) => {
+  console.log("Logout route hit");
+  res.json({ message: "Logout route hit" });
+  // Clear cookies with the same options they were set with
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  res.clearCookie("userId", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+  });
+
+  res.json({ message: "Logged out successfully" });
+});
+
 // User login
 router.post("/login", authLimiter, async (req, res) => {
   const { email, password } = req.body;
@@ -391,24 +411,6 @@ router.put("/updatePassword/:userID", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
-});
-
-// Logout route
-router.post("/logout", (req, res) => {
-  // Clear cookies with the same options they were set with
-  res.clearCookie("authToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-  });
-
-  res.clearCookie("userId", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-  });
-
-  res.json({ message: "Logged out successfully" });
 });
 
 // Test route to debug JWT authentication
