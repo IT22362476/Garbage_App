@@ -1,11 +1,15 @@
-import axios from 'axios';
-import { withCsrf } from './csrf';
+import { api, API_ENDPOINTS } from "./apiClient";
 
-const API_URL = 'http://localhost:8070/api/vehicles';
+export const getVehicles = () => api.get("api/vehicles");
 
-export const getVehicles = () => axios.get(API_URL);
 // FIX: Add CSRF token to all mutating requests
-export const createVehicle = async (data) => axios.post(API_URL, data, await withCsrf());
-export const updateVehicle = async (id, data) => axios.put(`${API_URL}/${id}`, data, await withCsrf());
-export const deleteVehicle = async (id) => axios.delete(`${API_URL}/${id}`, await withCsrf());
-export const getVehicleCount = () => axios.get(`${API_URL}/count`);
+export const createVehicle = async (data) =>
+  api.post(API_ENDPOINTS.VEHICLES.CREATE, data);
+
+export const updateVehicle = async (id, data) =>
+  api.put(API_ENDPOINTS.VEHICLES.UPDATE(id), data);
+
+export const deleteVehicle = async (id) =>
+  api.delete(API_ENDPOINTS.VEHICLES.DELETE(id));
+
+export const getVehicleCount = () => api.get("api/vehicles/count");

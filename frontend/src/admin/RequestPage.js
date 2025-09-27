@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Ensure axios is imported
 import AdminNav from "./AdminNav";
 import Modal from "./AdminModal"; // Import the modal component
+import { getResidentRequests } from "../services/adminService.js";
 
 function RequestPage() {
   const [requests, setRequests] = useState([]);
@@ -10,23 +10,17 @@ function RequestPage() {
 
   // Fetch requests from the API when the component mounts
   useEffect(() => {
-    function getAllUserRequests() {
-      axios
-        .get("http://localhost:8070/schedulePickup/getAllPickups")
+    if (!isModalOpen) {
+      getResidentRequests()
         .then((res) => {
-          // Set all statuses to "Scheduled" initially
           const updatedRequests = res.data.map((request) => ({
             ...request,
-            // status: "Scheduled",
           }));
-          setRequests(updatedRequests); // Corrected state setter
+          setRequests(updatedRequests);
         })
         .catch((err) => {
           alert(err.message);
         });
-    }
-    if (!isModalOpen) {
-      getAllUserRequests(); // Fetch requests when the modal is closed
     }
   }, [isModalOpen]);
 

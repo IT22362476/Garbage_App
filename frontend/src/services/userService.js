@@ -1,11 +1,6 @@
-import axios from "axios";
-import { withCsrf } from "./csrf";
-
-const API_URL = "http://localhost:8070";
+import { api, API_ENDPOINTS } from "./apiClient";
 
 // FIX: Add CSRF token to all mutating requests
 export const logout = async () => {
-  return axios.post(`${API_URL}/user/logout`, await withCsrf(), {
-    withCredentials: true,
-  });
+  return api.post(API_ENDPOINTS.AUTH.LOGOUT);
 };

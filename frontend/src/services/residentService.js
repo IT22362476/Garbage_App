@@ -1,15 +1,7 @@
-// In services/collectorService.js
-import axios from "axios";
-import { withCsrf } from "./csrf";
+// services/collectorService.js
+import { api, API_ENDPOINTS } from "./apiClient";
 
-const API_URL = "http://localhost:8070";
-
-// Fetch users with the role of 'resident'
-// FIX: Add CSRF token to all mutating requests
+// Add garbage (mutating request, CSRF handled automatically via interceptor)
 export const addGarbage = async (garbageData) => {
-  return axios.post(
-    `${API_URL}/garbage/addGarbage`,
-    garbageData,
-    await withCsrf()
-  );
+  return api.post(API_ENDPOINTS.GARBAGE.ADD, garbageData);
 };
