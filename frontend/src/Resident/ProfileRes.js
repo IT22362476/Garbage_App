@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "./ResidentNavbar";
+import api from "../services/apiClient";
 
 function ProfileRes() {
   // State to store user details and form input
@@ -10,17 +11,10 @@ function ProfileRes() {
   // Function to fetch user profile details
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch("http://localhost:8070/user/profile", {
-        method: "GET",
-        credentials: "include", // send cookies automatically for authentication
+      const response = await api.get("user/profile", {
+        withCredentials: true,
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const userData = await response.json();
-      setUserProfile(userData);
+      setUserProfile(response.data);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching user profile:", error);
