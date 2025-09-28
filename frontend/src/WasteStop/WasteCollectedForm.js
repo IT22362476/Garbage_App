@@ -4,6 +4,7 @@ import { withCsrf } from "./csrf";
 import { Link, useNavigate } from "react-router-dom";
 import { getVehicles } from "../services/vehicleService";
 import { toast } from "react-toastify";
+import { getApprovedPickupsEndpoint } from "../services/adminService";
 
 const WasteCollectedForm = () => {
   const navigate = useNavigate();
@@ -27,9 +28,7 @@ const WasteCollectedForm = () => {
         const truckNumbers = vehiclesResponse.data.map((user) => user.truckNo);
         setVehicles(truckNumbers);
 
-        const locationsResponse = await axios.get(
-          "http://localhost:8070/approvedpickup/getApprovedPickups"
-        );
+        const locationsResponse = await getApprovedPickupsEndpoint();
         const locations = locationsResponse.data.map(
           (location) => location.location
         );

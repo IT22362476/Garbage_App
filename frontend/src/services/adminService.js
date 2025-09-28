@@ -18,3 +18,7 @@ export const updateRequestStatus = async (requestId, status) => {
 export const getApprovedPickups = () => {
   return api.get(API_ENDPOINTS.APPROVED_PICKUP.GET_ALL);
 };
+
+export const getApprovedPickupsEndpoint = () => {
+  return api.get("approvedpickup/getApprovedPickups");
+};
