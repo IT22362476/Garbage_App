@@ -12,7 +12,7 @@ import {
 } from "@ant-design/icons";
 import { CollectedWasteService } from "../services/collectedWasteService";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const GarbageStationSummary = () => {
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);

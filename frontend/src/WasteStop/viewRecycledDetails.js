@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { withCsrf } from "./csrf";
 import WasteHeader from "./WasteHeader";
 import Button from "../components/Button";
 import {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminNav from "./AdminNav";
 import { Pie, Bar } from "react-chartjs-2";
-import axios from "axios";
 import "chart.js/auto";
 import { GarbageService } from "../services/garbageService";
 

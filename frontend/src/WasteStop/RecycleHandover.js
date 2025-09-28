@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { withCsrf } from "./csrf";
 import WasteHeader from "./WasteHeader";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
@@ -89,7 +87,6 @@ const RecycleForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate collected area (allow letters, numbers, "/", ".", ",", and spaces)
     const areaRegex = /^[a-zA-Z0-9\/.,\s]+$/;
     if (!areaRegex.test(formData.area)) {
       newErrors.area =
