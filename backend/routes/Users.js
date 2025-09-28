@@ -122,6 +122,26 @@ router.get("/profile", authenticateJWT, async (req, res) => {
   }
 });
 
+router.put("/profile", authenticateJWT, async (req, res) => {
+  const { name, address, contact } = req.body;
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    user.name = name || user.name;
+    user.address = address || user.address;
+    // Contact number will be encrypted by User model setter
+    user.contact = contact || user.contact;
+    await user.save();
+    // toObject({ getters: true }) ensures decrypted contact is returned
+    res.json(user.toObject({ getters: true }));
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ error: "Error updating profile" });
+  }
+});
+
 // User registration with password hashing and input validation
 // FIX: Added express-validator to validate and sanitize registration fields
 router.post(
