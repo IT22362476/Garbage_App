@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import Navbar from "./ResidentNavbar";
-import axios from 'axios';
+import axios from "axios";
 import { useCookies } from "react-cookie";
+import {
+  deletePickup,
+  getPickupsByUser,
+} from "../services/shedulePickupService";
 
 function MyRequestsPage() {
   const navigate = useNavigate();
@@ -15,15 +19,15 @@ function MyRequestsPage() {
   // Fetch requests from the API when the component mounts
   useEffect(() => {
     if (userID) {
-      function getRequests() {
+      async function getRequests() {
         // Fetch requests for the logged-in user
-        axios.get(`http://localhost:8070/schedulePickup/getPickups?userID=${userID}`)
+        await getPickupsByUser(userID)
           .then((res) => {
             console.log(res.data); // Log the response to check its structure
-            const updatedRequests = res.data.map(request => ({
+            const updatedRequests = res.data.map((request) => ({
               ...request,
-              status: 'Scheduled', // Assuming all are initially scheduled
-              displayDate: new Date(request.date).toLocaleDateString() // Format date for display
+              status: "Scheduled", // Assuming all are initially scheduled
+              displayDate: new Date(request.date).toLocaleDateString(), // Format date for display
             }));
             setRequests(updatedRequests);
           })
@@ -35,20 +39,19 @@ function MyRequestsPage() {
     }
   }, [userID]);
 
-  const handleCancelRequest = (id) => {
+  const handleCancelRequest = async (id) => {
     console.log("ID to be deleted:", id); // Check the value of id
     if (!id) {
       alert("No valid ID found for deletion.");
       return;
     }
     if (window.confirm("Are you sure you want to delete this request?")) {
-      axios
-        .delete(`http://localhost:8070/schedulePickup/deletePickup/${id}`)
+      await deletePickup(id)
         .then(() => {
           // Update the status in the local state to "Canceled"
-          setRequests((requests) => 
+          setRequests((requests) =>
             requests.map((request) =>
-              request._id === id ? { ...request, status: 'Canceled' } : request
+              request._id === id ? { ...request, status: "Canceled" } : request
             )
           );
           alert("Request canceled successfully");
@@ -64,7 +67,9 @@ function MyRequestsPage() {
       <div className="flex">
         <Navbar />
         <div className="container bg-green-100 mx-auto px-4 py-8">
-          <h2 className="text-2xl font-semibold mb-4 text-center">My Scheduled Pickup Requests</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-center">
+            My Scheduled Pickup Requests
+          </h2>
           {requests.length === 0 ? (
             <p className="text-center text-lg">No requests found.</p>
           ) : (
@@ -82,9 +87,13 @@ function MyRequestsPage() {
                 <tbody>
                   {requests.map((request) => (
                     <tr key={request._id} className="border-t">
-                      <td className="px-4 py-2 whitespace-nowrap">{request.displayDate}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{request.time || 'N/A'}</td>
-                      <td className="px-4 py-2">{request.location || 'N/A'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        {request.displayDate}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        {request.time || "N/A"}
+                      </td>
+                      <td className="px-4 py-2">{request.location || "N/A"}</td>
                       <td className="px-4 py-2">{request.status}</td>
                       <td className="px-4 py-2">
                         <FontAwesomeIcon

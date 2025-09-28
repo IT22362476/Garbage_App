@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Navbar from "./ResidentNavbar";
 import { useCookies } from "react-cookie";
+import { createSchedulePickup } from "../services/shedulePickupService";
+import { toast } from "react-toastify";
 
 function SchedulePickupPage() {
   const [date, setdate] = useState("");
@@ -12,7 +13,7 @@ function SchedulePickupPage() {
   const [cookies] = useCookies(["userID"]);
   const userID = cookies.userID;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newSchedule = {
@@ -22,17 +23,14 @@ function SchedulePickupPage() {
       userID,
     };
 
-    axios
-      .post("http://localhost:8070/schedulePickup/addPickup", newSchedule)
-      .then(() => {
-        alert("Schedule Added");
-        // navigate('/confirmation', {
-        //   state: { message: 'Your pickup request has been submitted!' },
-        // });
-      })
-      .catch((err) => {
-        alert(err);
-      });
+    try {
+      await createSchedulePickup(newSchedule);
+      toast.success("Pickup scheduled successfully!");
+      navigate("/myRequests");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to schedule pickup.");
+    }
   };
 
   const availableLocations = [

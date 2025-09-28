@@ -6,6 +6,7 @@ import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
 import { getVehicles } from "../services/vehicleService";
 import { getApprovedPickups } from "../services/adminService";
+import { createReCycleWaste } from "../services/recycleWasteService";
 
 const RecycleForm = () => {
   // State to manage form data
@@ -116,19 +117,14 @@ const RecycleForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Validate the form before submitting
-    // if (!validateForm()) {
-    //   return; // Exit if there are validation errors
-    // }
+    //Validate the form before submitting
+    if (!validateForm()) {
+      return; // Exit if there are validation errors
+    }
 
     try {
-      console.log("Submitting data:", formData);
       // FIX: Add CSRF token to the request to prevent 403 Forbidden error
-      const response = await axios.post(
-        "http://localhost:8070/recycleWaste/addRecyclingWastes",
-        formData,
-        await withCsrf()
-      );
+      await createReCycleWaste(formData);
 
       navigate("/viewRecycledDetails");
 
@@ -158,12 +154,12 @@ const RecycleForm = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-2 font-semibold">Truck Number:</label>
-              {/* <input 
-                              name="truckNumber"
-                              value={formData.truckNumber}
-                              onChange={handleChange}
-                              className="w-full p-2 border border-gray-300 rounded"
-              /> */}
+              <input
+                name="truckNumber"
+                value={formData.truckNumber}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded"
+              />
               <select
                 name="truckNumber"
                 value={formData.truckNumber}
@@ -180,7 +176,7 @@ const RecycleForm = () => {
             </div>
             <div>
               <label className="block mb-2 font-semibold">Area:</label>
-              {/* <input
+              <input
                 name="area"
                 value={formData.area}
                 onChange={handleChange}
@@ -189,7 +185,7 @@ const RecycleForm = () => {
                 }`}
               />
               {errors.area && <p className="text-red-500">{errors.area}</p>}
- */}
+
               <select
                 name="area"
                 value={formData.area}

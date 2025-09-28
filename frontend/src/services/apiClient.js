@@ -181,11 +181,11 @@ export const API_ENDPOINTS = {
 
   // Schedule pickup
   SCHEDULE_PICKUP: {
-    CREATE: "/schedulePickup/create",
+    CREATE: "/schedulePickup/addPickup",
     GET_ALL: "/schedulePickup/getAllPickups",
-    GET_BY_USER: "/schedulePickup/getByUser",
+    GET_BY_USER: (userID) => `/schedulePickup/getPickups?userID=${userID}`,
     UPDATE_STATUS: (id) => `/schedulePickup/updateStatus/${id}`,
-    DELETE: (id) => `/schedulePickup/${id}`,
+    DELETE: (id) => `/schedulePickup/deletePickup/${id}`,
   },
 
   // Approved pickup
