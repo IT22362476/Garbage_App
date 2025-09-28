@@ -25,7 +25,6 @@ const authLimiter = rateLimit({
 // Logout route
 router.post("/logout", (req, res) => {
   console.log("Logout route hit");
-  res.json({ message: "Logout route hit" });
   // Clear cookies with the same options they were set with
   res.clearCookie("authToken", {
     httpOnly: true,

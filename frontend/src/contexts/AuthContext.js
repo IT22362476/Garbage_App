@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getCsrfToken } from "./csrf";
+import { logout as logoutApi } from "../services/userService";
+import { api, API_ENDPOINTS } from "../services/apiClient";
 
 const AuthContext = createContext();
 
@@ -21,24 +22,8 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch("http://localhost:8070/user/profile", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const responseText = await response.text();
-
-        let userData;
-        try {
-          userData = JSON.parse(responseText);
-        } catch (parseError) {
-          return;
-        }
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
+      const response = await api.get(API_ENDPOINTS.AUTH.PROFILE);
+      setUser(response.data);
     } catch (error) {
       setUser(null);
     } finally {
@@ -46,83 +31,56 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // FIX: Add CSRF token to login request (non-OAuth)
   const login = async (email, password) => {
     try {
-      const csrfToken = await getCsrfToken();
-
-      const response = await fetch("http://localhost:8070/user/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "CSRF-Token": csrfToken,
-        },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
+      setLoading(true);
+      // 1. Call login API
+      const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, {
+        email,
+        password,
       });
 
-      const data = await response.json();
+      // 2. Fetch user profile immediately after login
+      const profileResponse = await api.get(API_ENDPOINTS.AUTH.PROFILE);
+      setUser(profileResponse.data);
 
-      if (response.ok) {
-        // After successful login, fetch user profile
-        await checkAuthStatus();
-        return { success: true, data };
-      } else {
-        return { success: false, error: data.error };
-      }
+      return { success: true, user: profileResponse.data };
     } catch (error) {
-      return { success: false, error: "Network error" };
+      const errorMsg =
+        error.response?.data?.error || "Invalid credentials or network error";
+      return { success: false, error: errorMsg };
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (userData) => {
     try {
-      const csrfToken = await getCsrfToken();
-      const response = await fetch("http://localhost:8070/user/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "CSRF-Token": csrfToken,
-        },
-        credentials: "include",
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        return { success: true, data };
-      } else {
-        return { success: false, error: data.error || data.errors };
-      }
+      const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, userData);
+      return { success: true, data: response.data };
     } catch (error) {
-      return { success: false, error: "Network error" };
+      const errorMsg =
+        error.response?.data?.error ||
+        error.response?.data?.errors ||
+        "Network error";
+      return { success: false, error: errorMsg };
     }
   };
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:8070/user/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await logoutApi();
     } catch (error) {
+      console.error("Logout failed:", error);
     } finally {
       setUser(null);
-
-      // Optional: Clear any localStorage or sessionStorage if you're using them
       localStorage.removeItem("user");
       sessionStorage.removeItem("user");
-
-      // Force a complete page reload to clear any remaining state
-      // This will also trigger a fresh auth check
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 100); // Small delay to ensure state is cleared
     }
   };
 
   const loginWithGoogle = () => {
-    window.location.href = "http://localhost:8070/auth/google";
+    window.location.href = API_ENDPOINTS.AUTH.GOOGLE_AUTH;
   };
 
   const value = {
