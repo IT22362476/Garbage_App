@@ -17,7 +17,7 @@ router.post(
 router.get(
   "/getCollectedWaste",
   authenticateJWT,
-  authorizeRoles("admin", "collector"),
+  authorizeRoles("admin", "collector", "recorder"),
   CollectedWasteController.getCollectedWaste
 );
 

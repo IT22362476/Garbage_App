@@ -1,11 +1,11 @@
 // services/apiClient.js
 // Centralized API client with authentication and CSRF handling
-import axios from 'axios';
-import { getCsrfToken, clearCsrfToken } from './csrf';
+import axios from "axios";
+import { getCsrfToken, clearCsrfToken } from "./csrf";
 
 // Configuration
 const API_CONFIG = {
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8070',
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8070",
   timeout: 10000, // 10 seconds
   withCredentials: true,
 };
@@ -17,13 +17,13 @@ const apiClient = axios.create(API_CONFIG);
 apiClient.interceptors.request.use(
   async (config) => {
     // Add CSRF token for mutating requests (POST, PUT, DELETE, PATCH)
-    const mutatingMethods = ['post', 'put', 'delete', 'patch'];
+    const mutatingMethods = ["post", "put", "delete", "patch"];
     if (mutatingMethods.includes(config.method?.toLowerCase())) {
       try {
         const csrfToken = await getCsrfToken();
-        config.headers['CSRF-Token'] = csrfToken;
+        config.headers["CSRF-Token"] = csrfToken;
       } catch (error) {
-        console.error('Failed to get CSRF token:', error);
+        console.error("Failed to get CSRF token:", error);
       }
     }
 
@@ -53,16 +53,19 @@ apiClient.interceptors.response.use(
           clearCsrfToken();
           localStorage.clear();
           sessionStorage.clear();
-          
+
           // Only redirect if not already on login page
-          if (!window.location.pathname.includes('/login')) {
-            window.location.href = '/login';
+          if (!window.location.pathname.includes("/login")) {
+            window.location.href = "/login";
           }
           break;
 
         case 403:
           // Forbidden - might be CSRF token issue
-          if (data?.error?.includes('CSRF') || data?.message?.includes('CSRF')) {
+          if (
+            data?.error?.includes("CSRF") ||
+            data?.message?.includes("CSRF")
+          ) {
             clearCsrfToken();
             // Retry the request once with a fresh CSRF token
             return apiClient.request(error.config);
@@ -70,19 +73,22 @@ apiClient.interceptors.response.use(
           break;
 
         case 404:
-          console.error('API endpoint not found:', error.config.url);
+          console.error("API endpoint not found:", error.config.url);
           break;
 
         case 500:
-          console.error('Server error:', data?.message || 'Internal server error');
+          console.error(
+            "Server error:",
+            data?.message || "Internal server error"
+          );
           break;
 
         default:
-          console.error('API Error:', status, data);
+          console.error("API Error:", status, data);
       }
     } else if (error.request) {
       // Network error
-      console.error('Network error:', error.message);
+      console.error("Network error:", error.message);
     }
 
     return Promise.reject(error);
@@ -120,7 +126,7 @@ export const api = {
   upload: (url, formData, onUploadProgress = null) => {
     return apiClient.post(url, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
       onUploadProgress,
     });
@@ -128,18 +134,20 @@ export const api = {
 
   // Download file
   download: (url, filename, config = {}) => {
-    return apiClient.get(url, {
-      ...config,
-      responseType: 'blob',
-    }).then((response) => {
-      // Create blob link to download
-      const blob = new Blob([response.data]);
-      const link = document.createElement('a');
-      link.href = window.URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-      window.URL.revokeObjectURL(link.href);
-    });
+    return apiClient
+      .get(url, {
+        ...config,
+        responseType: "blob",
+      })
+      .then((response) => {
+        // Create blob link to download
+        const blob = new Blob([response.data]);
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+      });
   },
 };
 
@@ -147,25 +155,25 @@ export const api = {
 export const API_ENDPOINTS = {
   // Authentication endpoints
   AUTH: {
-    LOGIN: '/user/login',
-    REGISTER: '/user/register',
-    LOGOUT: '/user/logout',
-    PROFILE: '/user/profile',
-    CSRF_TOKEN: '/user/csrf-token',
-    GOOGLE_AUTH: '/auth/google',
+    LOGIN: "/user/login",
+    REGISTER: "/user/register",
+    LOGOUT: "/user/logout",
+    PROFILE: "/user/profile",
+    CSRF_TOKEN: "/user/csrf-token",
+    GOOGLE_AUTH: "/auth/google",
   },
 
   // User management
   USERS: {
-    BASE: '/user',
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
+    BASE: "/user",
+    PROFILE: "/user/profile",
+    UPDATE_PROFILE: "/user/profile",
   },
 
   // Garbage management
   GARBAGE: {
-    ADD: '/garbage/addGarbage',
-    GET_ALL: '/garbage/getAllGarbage',
+    ADD: "/garbage/addGarbage",
+    GET_ALL: "/garbage/getAllGarbage",
     GET_BY_ID: (id) => `/garbage/${id}`,
     UPDATE: (id) => `/garbage/${id}`,
     DELETE: (id) => `/garbage/${id}`,
@@ -173,17 +181,17 @@ export const API_ENDPOINTS = {
 
   // Schedule pickup
   SCHEDULE_PICKUP: {
-    CREATE: '/schedulePickup/create',
-    GET_ALL: '/schedulePickup/getAllPickups',
-    GET_BY_USER: '/schedulePickup/getByUser',
+    CREATE: "/schedulePickup/create",
+    GET_ALL: "/schedulePickup/getAllPickups",
+    GET_BY_USER: "/schedulePickup/getByUser",
     UPDATE_STATUS: (id) => `/schedulePickup/updateStatus/${id}`,
     DELETE: (id) => `/schedulePickup/${id}`,
   },
 
   // Approved pickup
   APPROVED_PICKUP: {
-    ADD: '/approvedpickup/add',
-    GET_ALL: '/approvedpickup/getAll',
+    ADD: "/approvedpickup/add",
+    GET_ALL: "/approvedpickup/getAll",
     GET_BY_ID: (id) => `/approvedpickup/${id}`,
     UPDATE: (id) => `/approvedpickup/${id}`,
     DELETE: (id) => `/approvedpickup/${id}`,
@@ -191,9 +199,9 @@ export const API_ENDPOINTS = {
 
   // Vehicle management
   VEHICLES: {
-    BASE: '/vehicles',
-    GET_ALL: '/vehicles',
-    CREATE: '/vehicles',
+    BASE: "/vehicles",
+    GET_ALL: "/vehicles",
+    CREATE: "/vehicles",
     GET_BY_ID: (id) => `/vehicles/${id}`,
     UPDATE: (id) => `/vehicles/${id}`,
     DELETE: (id) => `/vehicles/${id}`,
@@ -201,17 +209,17 @@ export const API_ENDPOINTS = {
 
   // Collector management
   COLLECTORS: {
-    BASE: '/collectors',
-    GET_ALL: '/collectors',
+    BASE: "/collectors",
+    GET_ALL: "/collectors",
     GET_BY_ID: (id) => `/collectors/${id}`,
     UPDATE: (id) => `/collectors/${id}`,
   },
 
   // Collected waste
   COLLECTED_WASTE: {
-    BASE: '/collectedWaste',
-    GET_ALL: '/collectedWaste',
-    CREATE: '/collectedWaste',
+    BASE: "/collectedWaste",
+    GET_ALL: "/collectedWaste",
+    CREATE: "/collectedWaste",
     GET_BY_ID: (id) => `/collectedWaste/${id}`,
     UPDATE: (id) => `/collectedWaste/${id}`,
     DELETE: (id) => `/collectedWaste/${id}`,
@@ -219,9 +227,9 @@ export const API_ENDPOINTS = {
 
   // Recycle waste
   RECYCLE_WASTE: {
-    BASE: '/recycleWaste',
-    GET_ALL: '/recycleWaste',
-    CREATE: '/recycleWaste',
+    BASE: "/recycleWaste",
+    GET_ALL: "/recycleWaste",
+    CREATE: "/recycleWaste",
     GET_BY_ID: (id) => `/recycleWaste/${id}`,
     UPDATE: (id) => `/recycleWaste/${id}`,
     DELETE: (id) => `/recycleWaste/${id}`,
@@ -229,9 +237,9 @@ export const API_ENDPOINTS = {
 
   // Total garbage
   TOTAL_GARBAGE: {
-    BASE: '/totalgarbage',
-    GET_ALL: '/totalgarbage',
-    CREATE: '/totalgarbage',
+    BASE: "/totalgarbage",
+    GET_ALL: "/totalgarbage",
+    CREATE: "/totalgarbage",
     GET_BY_ID: (id) => `/totalgarbage/${id}`,
   },
 };
@@ -239,7 +247,7 @@ export const API_ENDPOINTS = {
 // Helper function to build URLs with query parameters
 export const buildUrl = (endpoint, params = {}) => {
   const url = new URL(endpoint, API_CONFIG.baseURL);
-  Object.keys(params).forEach(key => {
+  Object.keys(params).forEach((key) => {
     if (params[key] !== null && params[key] !== undefined) {
       url.searchParams.append(key, params[key]);
     }
