@@ -3,6 +3,7 @@ import AdminNav from "./AdminNav";
 import { Pie, Bar } from "react-chartjs-2";
 import axios from "axios";
 import "chart.js/auto";
+import { GarbageService } from "../services/garbageService";
 
 function DataAnalytics() {
   const [garbageData, setGarbageData] = useState([]);
@@ -11,9 +12,9 @@ function DataAnalytics() {
 
   useEffect(() => {
     // Fetch garbage data from the API
-    axios
-      .get("http://localhost:8070/garbage/getAllGarbage")
-      .then((response) => {
+    const fetchData = async () => {
+      try {
+        const response = await GarbageService.getAllGarbages();
         const data = response.data;
         setGarbageData(data);
 
@@ -37,10 +38,12 @@ function DataAnalytics() {
 
         setCategories(categoryLabels);
         setWeights(categoryWeights);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.log("Error fetching garbage data:", error);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   // Pie chart data

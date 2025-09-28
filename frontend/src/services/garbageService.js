@@ -1,4 +1,4 @@
-import { api } from "./apiClient";
+import { api, API_ENDPOINTS } from "./apiClient";
 
 export const GarbageService = {
   getCompletedGarbage: (userId) =>
@@ -6,4 +6,6 @@ export const GarbageService = {
 
   reportSummary: (summaryData) =>
     api.post("/totalgarbage/total-garbages", summaryData),
+
+  getAllGarbages: api.get(API_ENDPOINTS.GARBAGE.GET_ALL),
 };

@@ -27,7 +27,6 @@ function Login() {
   }, [user, loading]);
 
   const navigateBasedOnRole = () => {
-    console.log("Navigating based on role for user:", user);
     if (!user) return;
 
     if (user.role === "resident") {

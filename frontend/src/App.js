@@ -62,15 +62,18 @@ function App() {
 
             {/* Authenticated (any user) */}
             <Route element={<ProtectedRoute />}>
-            	<Route path="/logout" element={<Logout />}/>
-            	<Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/logout" element={<Logout />} />
+              <Route path="/dashboard" element={<Dashboard />} />
             </Route>
 
             {/* Resident-only routes */}
             <Route element={<ProtectedRoute requiredRole="resident" />}>
               <Route path="/residentHome" element={<HomePage />} />
               <Route path="/schedule-pickup" element={<SchedulePickupPage />} />
-              <Route path="/add-garbage-details" element={<AddGarbageDetailsPage />} />
+              <Route
+                path="/add-garbage-details"
+                element={<AddGarbageDetailsPage />}
+              />
               <Route path="/confirmation" element={<ConfirmationPage />} />
               <Route path="/MyRequestsPage" element={<MyRequestsPage />} />
               <Route path="/Profile" element={<ProfileRes />} />
@@ -78,20 +81,38 @@ function App() {
 
             {/* Collector-only routes */}
             <Route element={<ProtectedRoute requiredRole="collector" />}>
-              <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
+              <Route
+                path="/CollectorHome/:userID"
+                element={<CollectorHome />}
+              />
               <Route path="/TotalGarbage" element={<TotalGarbage />} />
               <Route path="/Profile/:userID" element={<Profile />} />
             </Route>
 
             {/* WasteStop (recorder role) */}
             <Route element={<ProtectedRoute requiredRole="recorder" />}>
-              <Route path="/CollectedWasteDashboard" element={<CollectedWasteDashboard />} />
+              <Route
+                path="/CollectedWasteDashboard"
+                element={<CollectedWasteDashboard />}
+              />
               <Route path="/collectedWaste" element={<CollectedWasteHome />} />
-              <Route path="/viewCollectedWaste" element={<CollectedWasteTable />} />
+              <Route
+                path="/viewCollectedWaste"
+                element={<CollectedWasteTable />}
+              />
               <Route path="/RecycleForm" element={<RecycleForm />} />
-              <Route path="/update/:id" element={<WasteCollectedUpdateForm />} />
-              <Route path="/GarbageStationSummary" element={<GarbageStationSummary />} />
-              <Route path="/viewRecycledDetails" element={<ViewRecycledDetails />} />
+              <Route
+                path="/update/:id"
+                element={<WasteCollectedUpdateForm />}
+              />
+              <Route
+                path="/GarbageStationSummary"
+                element={<GarbageStationSummary />}
+              />
+              <Route
+                path="/viewRecycledDetails"
+                element={<ViewRecycledDetails />}
+              />
             </Route>
 
             {/* Admin-only routes */}
