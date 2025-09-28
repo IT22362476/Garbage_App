@@ -1,227 +1,241 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import AdminNav from "./AdminNav";
 import {
   getVehicles,
   createVehicle,
   updateVehicle,
   deleteVehicle,
-} from "../services/vehicleService.js";
+} from "../services/vehicleService";
 
 function ManageVehicles() {
   const [vehicles, setVehicles] = useState([]);
   const [newVehicle, setNewVehicle] = useState({
+    truckNo: "",
     name: "",
-    brand: "",
+    area: "",
+    owner: "",
     year: "",
-    price: "",
   });
   const [errors, setErrors] = useState({});
+  const [editErrors, setEditErrors] = useState({});
   const [editingVehicle, setEditingVehicle] = useState(null);
+  const [apiError, setApiError] = useState("");
 
   useEffect(() => {
     fetchVehicles();
   }, []);
 
   const fetchVehicles = async () => {
-    const response = await getVehicles();
-    setVehicles(response.data);
+    try {
+      const response = await getVehicles();
+      if (response && Array.isArray(response.data)) {
+        setVehicles(response.data);
+        setApiError("");
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (err) {
+      console.error("Error fetching vehicles:", err);
+      const errorMsg = err.response?.data?.message || err.message;
+      setApiError(errorMsg);
+      toast.error(errorMsg);
+    }
   };
 
-  const validateFields = () => {
+  // Validate fields, optionally set error state
+  const validateFields = (vehicle, setErrorState) => {
     const newErrors = {};
-    if (!newVehicle.name) newErrors.name = "Name is required";
-    if (!newVehicle.brand) newErrors.brand = "Brand is required";
-    if (
-      !newVehicle.year ||
-      isNaN(newVehicle.year) ||
-      newVehicle.year.length !== 4
-    )
+    if (!vehicle.truckNo) newErrors.truckNo = "Truck number is required";
+    if (!vehicle.name) newErrors.name = "Name is required";
+    if (!vehicle.area) newErrors.area = "Area is required";
+    if (!vehicle.owner) newErrors.owner = "Owner is required";
+    if (!vehicle.year || isNaN(vehicle.year))
       newErrors.year = "Valid year is required";
-    if (!newVehicle.price || isNaN(newVehicle.price))
-      newErrors.price = "Valid price is required";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    if (setErrorState) setErrorState(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewVehicle({ ...newVehicle, [name]: value });
-    setErrors({ ...errors, [name]: "" }); // Clear error when field changes
+    setErrors({ ...errors, [name]: "" });
   };
 
-  // const hardcodedVehicles = [
-  //   { name: "Model S", brand: "Tesla", year: "2020", price: "79999" },
-  //   { name: "Mustang", brand: "Ford", year: "2021", price: "55999" },
-  //   { name: "Civic", brand: "Honda", year: "2019", price: "23999" },
-  //   { name: "Camry", brand: "Toyota", year: "2022", price: "29999" },
-  // ];
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingVehicle({ ...editingVehicle, [name]: value });
+    setEditErrors({ ...editErrors, [name]: "" });
+  };
 
   const handleCreate = async () => {
-    if (!validateFields()) return; // Prevent form submission if validation fails
+    if (!validateFields(newVehicle, setErrors)) return;
 
-    // for (const vehicle of hardcodedVehicles) {
-    //   await createVehicle(vehicle);
-    // }
-    await createVehicle(newVehicle);
-    setNewVehicle({ name: "", brand: "", year: "", price: "" });
-    fetchVehicles();
+    try {
+      await createVehicle({ ...newVehicle, year: Number(newVehicle.year) });
+      setNewVehicle({ truckNo: "", name: "", area: "", owner: "", year: "" });
+      setErrors({});
+      fetchVehicles();
+      toast.success("Vehicle created successfully!");
+    } catch (err) {
+      console.error(err);
+      const errorMsg =
+        err.response?.data?.message || "Failed to create vehicle";
+      setApiError(errorMsg);
+      toast.error(errorMsg);
+    }
   };
 
   const handleUpdate = async (id) => {
-    await updateVehicle(id, editingVehicle);
-    setEditingVehicle(null);
-    fetchVehicles();
+    if (!validateFields(editingVehicle, setEditErrors)) return;
+
+    try {
+      await updateVehicle(id, {
+        ...editingVehicle,
+        year: Number(editingVehicle.year),
+      });
+      setEditingVehicle(null);
+      setEditErrors({});
+      fetchVehicles();
+      toast.success("Vehicle updated successfully!");
+    } catch (err) {
+      console.error(err);
+      const errorMsg =
+        err.response?.data?.message || "Failed to update vehicle";
+      setApiError(errorMsg);
+      toast.error(errorMsg);
+    }
   };
 
   const handleDelete = async (id) => {
-    await deleteVehicle(id);
-    fetchVehicles();
+    try {
+      await deleteVehicle(id);
+      fetchVehicles();
+      toast.success("Vehicle deleted successfully!");
+    } catch (err) {
+      console.error(err);
+      const errorMsg =
+        err.response?.data?.message || "Failed to delete vehicle";
+      setApiError(errorMsg);
+      toast.error(errorMsg);
+    }
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
       <AdminNav />
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-8 bg-white shadow-md rounded-lg m-4">
-          <h1 className="text-3xl font-bold text-gray-700 mb-8">
-            Vehicle Management
-          </h1>
+      <div className="flex-1 overflow-y-auto p-8">
+        <h1 className="text-3xl font-bold mb-6">Vehicle Management</h1>
 
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-600 mb-4">
-              Add Vehicle
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
+        {apiError && <p className="text-red-600 mb-4">{apiError}</p>}
+
+        {/* Create Vehicle Form */}
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h2 className="text-xl font-semibold mb-4">Add Vehicle</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {["truckNo", "name", "area", "owner", "year"].map((field) => (
+              <div key={field}>
                 <input
-                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  name="name"
-                  placeholder="Name"
-                  value={newVehicle.name}
+                  name={field}
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={newVehicle[field]}
                   onChange={handleChange}
+                  className="p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
-                {errors.name && (
-                  <p className="text-red-500 text-sm">{errors.name}</p>
+                {errors[field] && (
+                  <p className="text-red-500 text-sm">{errors[field]}</p>
                 )}
               </div>
+            ))}
+          </div>
+          <button
+            onClick={handleCreate}
+            className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+          >
+            Create Vehicle
+          </button>
+        </div>
 
-              <div>
-                <input
-                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  name="brand"
-                  placeholder="Brand"
-                  value={newVehicle.brand}
-                  onChange={handleChange}
-                />
-                {errors.brand && (
-                  <p className="text-red-500 text-sm">{errors.brand}</p>
-                )}
-              </div>
-
-              <div>
-                <input
-                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  name="year"
-                  placeholder="Year"
-                  value={newVehicle.year}
-                  onChange={handleChange}
-                />
-                {errors.year && (
-                  <p className="text-red-500 text-sm">{errors.year}</p>
-                )}
-              </div>
-
-              <div>
-                <input
-                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  name="price"
-                  placeholder="Price"
-                  value={newVehicle.price}
-                  onChange={handleChange}
-                />
-                {errors.price && (
-                  <p className="text-red-500 text-sm">{errors.price}</p>
-                )}
-              </div>
-            </div>
-            <button
-              className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded shadow hover:bg-indigo-600"
-              onClick={handleCreate}
+        {/* Vehicles List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {vehicles.map((vehicle) => (
+            <div
+              key={vehicle._id}
+              className="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between"
             >
-              Create Vehicle
-            </button>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold text-gray-600 mb-4">
-              Vehicle List
-            </h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {vehicles.map((vehicle) => (
-                <div
-                  key={vehicle._id}
-                  className="p-6 bg-white border border-gray-200 rounded-lg shadow-md"
-                >
-                  {editingVehicle && editingVehicle._id === vehicle._id ? (
-                    <div className="space-y-4">
+              {editingVehicle?._id === vehicle._id ? (
+                <div className="space-y-3">
+                  {["truckNo", "name", "area", "owner", "year"].map((field) => (
+                    <div key={field}>
                       <input
+                        name={field}
+                        value={editingVehicle[field]}
+                        onChange={handleEditChange}
                         className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        name="name"
-                        value={editingVehicle.name}
-                        onChange={(e) =>
-                          setEditingVehicle({
-                            ...editingVehicle,
-                            name: e.target.value,
-                          })
-                        }
                       />
-                      <div className="flex space-x-2">
-                        <button
-                          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                          onClick={() => handleUpdate(vehicle._id)}
-                        >
-                          Update
-                        </button>
-                        <button
-                          className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-                          onClick={() => setEditingVehicle(null)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col justify-between space-y-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {vehicle.name}
-                        </h3>
-                        <p className="text-sm text-gray-600">{vehicle.brand}</p>
-                        <p className="text-sm text-gray-600">
-                          {vehicle.isAvailable}
+                      {editErrors[field] && (
+                        <p className="text-red-500 text-sm">
+                          {editErrors[field]}
                         </p>
-                      </div>
-                      <div className="flex justify-between">
-                        <button
-                          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                          onClick={() => setEditingVehicle(vehicle)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                          onClick={() => handleDelete(vehicle._id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      )}
                     </div>
-                  )}
+                  ))}
+                  <div className="flex space-x-2 mt-2">
+                    <button
+                      onClick={() => handleUpdate(vehicle._id)}
+                      className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                      Update
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingVehicle(null);
+                        setEditErrors({});
+                      }}
+                      className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              ))}
+              ) : (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold">{vehicle.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      Truck: {vehicle.truckNo}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Owner: {vehicle.owner}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Area: {vehicle.area}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Year: {vehicle.year}
+                    </p>
+                  </div>
+                  <div className="flex justify-between mt-4">
+                    <button
+                      onClick={() => {
+                        setEditingVehicle({ ...vehicle });
+                        setEditErrors({});
+                      }}
+                      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(vehicle._id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
@@ -229,129 +243,3 @@ function ManageVehicles() {
 }
 
 export default ManageVehicles;
-
-//ManageVehicles.js
-
-// import React from "react";
-// import AdminNav from "./AdminNav";
-
-// function ManageVehicles() {
-
-//   return (
-//     <div className="flex">
-//       <AdminNav />
-//       <div className="flex-grow p-6">
-//         <h1>Manage Vehicles</h1>
-//       </div>
-//     </div>
-//   );
-// }
-//
-// export default ManageVehicles;
-
-// import React, { useState } from 'react';
-// import axios from 'axios'; // For making API requests (assuming a backend API)
-
-// const AddVehicleForm = () => {
-//   const [formData, setFormData] = useState({
-//     truckNo: '',
-//     name: '',
-//     area: '',
-//     owner: '',
-//     year: '',
-//   });
-
-//   const handleChange = (e) => {
-//     setFormData({
-//       ...formData,
-//       [e.target.name]: e.target.value,
-//     });
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     try {
-//       const response = await axios.post('http://localhost:8070/vehicle/addVehicle', formData); // Replace with your actual API endpoint
-//       console.log(response.data); // Handle success response (optional)
-//       alert('Vehicle added successfully!');
-//       setFormData({
-//         truckNo: '',
-//         name: '',
-//         area: '',
-//         owner: '',
-//         year: '',
-//       });
-//     } catch (error) {
-//       console.error('Error adding vehicle:', error);
-//       alert('Error adding vehicle. Please try again.');
-//     }
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-//       <h1 className="text-xl font-bold text-center mb-4">Add Vehicle</h1>
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Grid container */}
-//         <div>
-//           <label className="block mb-2 font-semibold">Truck Number:</label>
-//           <input
-//             name="truckNo"
-//             value={formData.truckNo}
-//             onChange={handleChange}
-//             className="w-full p-2 border border-gray-300 rounded"
-//             required
-//           />
-//         </div>
-//         <div>
-//           <label className="block mb-2 font-semibold">Vehicle Name:</label>
-//           <input
-//             name="name"
-//             value={formData.name}
-//             onChange={handleChange}
-//             className="w-full p-2 border border-gray-300 rounded"
-//             required
-//           />
-//         </div>
-//         <div>
-//           <label className="block mb-2 font-semibold">Area:</label>
-//           <input
-//             name="area"
-//             value={formData.area}
-//             onChange={handleChange}
-//             className="w-full p-2 border border-gray-300 rounded"
-//             required
-//           />
-//         </div>
-//         <div>
-//           <label className="block mb-2 font-semibold">Owner Name:</label>
-//           <input
-//             name="owner"
-//             value={formData.owner}
-//             onChange={handleChange}
-//             className="w-full p-2 border border-gray-300 rounded"
-//             required
-//           />
-//         </div>
-//         <div>
-//           <label className="block mb-2 font-semibold">Year:</label>
-//           <input
-//             name="year"
-//             type="number" // Specify input type as number
-//             value={formData.year}
-//             onChange={handleChange}
-//             className="w-full p-2 border border-gray-300 rounded"
-//             required
-//           />
-//         </div>
-//       </div>
-//       <button
-//         type="submit"
-//         className="w-full p-2 mt-4 bg-green-600 text-white font-bold rounded hover:bg-green-700 transition"
-//       >
-//         Add Vehicle
-//       </button>
-//     </form>
-//   );
-// };
-
-// export default AddVehicleForm;

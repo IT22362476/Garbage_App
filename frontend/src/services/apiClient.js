@@ -200,11 +200,11 @@ export const API_ENDPOINTS = {
   // Vehicle management
   VEHICLES: {
     BASE: "/vehicles",
-    GET_ALL: "/vehicles",
-    CREATE: "/vehicles",
-    GET_BY_ID: (id) => `/vehicles/${id}`,
-    UPDATE: (id) => `/vehicles/${id}`,
-    DELETE: (id) => `/vehicles/${id}`,
+    GET_ALL: "api/vehicles",
+    CREATE: "api/vehicles",
+    GET_BY_ID: (id) => `api/vehicles/${id}`,
+    UPDATE: (id) => `api/vehicles/${id}`,
+    DELETE: (id) => `api/vehicles/${id}`,
   },
 
   // Collector management

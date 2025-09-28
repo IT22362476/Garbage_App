@@ -17,7 +17,7 @@ const Navbar = ({ theme, setTheme }) => {
           <li>Home</li>
         </Link>
 
-        <Link to="/MyRequestsPage">
+        <Link to="/myRequests">
           <li>MyRequests</li>
         </Link>
 

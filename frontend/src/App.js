@@ -75,7 +75,7 @@ function App() {
                 element={<AddGarbageDetailsPage />}
               />
               <Route path="/confirmation" element={<ConfirmationPage />} />
-              <Route path="/MyRequestsPage" element={<MyRequestsPage />} />
+              <Route path="/myRequests" element={<MyRequestsPage />} />
               <Route path="/Profile" element={<ProfileRes />} />
             </Route>
 

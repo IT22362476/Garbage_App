@@ -50,7 +50,7 @@ const Navbar = () => {
           </li>
           <li className="mb-4">
             <Link
-              to="/MyRequestsPage"
+              to="/myRequests"
               className="block py-2 px-6 hover:bg-green-600"
             >
               My Requests
