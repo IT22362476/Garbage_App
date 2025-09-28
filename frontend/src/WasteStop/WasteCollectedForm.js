@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { withCsrf } from "./csrf";
 import { Link, useNavigate } from "react-router-dom";
+import { getVehicles } from "../services/vehicleService";
+import { toast } from "react-toastify";
 
 const WasteCollectedForm = () => {
   const navigate = useNavigate();
@@ -21,9 +23,7 @@ const WasteCollectedForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const vehiclesResponse = await axios.get(
-          "http://localhost:8070/api/vehicles/"
-        );
+        const vehiclesResponse = await getVehicles();
         const truckNumbers = vehiclesResponse.data.map((user) => user.truckNo);
         setVehicles(truckNumbers);
 
@@ -130,7 +130,10 @@ const WasteCollectedForm = () => {
       navigate("/viewCollectedWaste"); // Redirect after successful submission
     } catch (error) {
       console.error("Error submitting data:", error);
-      alert("Error submitting data");
+
+      const message = error.response?.data?.message || "Error submitting data";
+
+      toast.error(message);
     }
   };
 

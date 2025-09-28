@@ -18,7 +18,7 @@ router.post("/", authenticateJWT, authorizeRoles("admin"), createVehicle);
 router.get(
   "/",
   authenticateJWT,
-  authorizeRoles("admin", "collector"),
+  authorizeRoles("admin", "collector", "recorder"),
   getAllVehicles
 );
 router.get(

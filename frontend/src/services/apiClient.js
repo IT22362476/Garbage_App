@@ -217,19 +217,19 @@ export const API_ENDPOINTS = {
 
   // Collected waste
   COLLECTED_WASTE: {
-    BASE: "/collectedWaste",
-    GET_ALL: "/collectedWaste",
-    CREATE: "/collectedWaste",
-    GET_BY_ID: (id) => `/collectedWaste/${id}`,
-    UPDATE: (id) => `/collectedWaste/${id}`,
-    DELETE: (id) => `/collectedWaste/${id}`,
+    BASE: "/collectedwaste",
+    GET_ALL: "/collectedwaste/getCollectedWaste",
+    CREATE: "/collectedwaste/addCollectedWaste",
+    GET_BY_ID: (id) => `/collectedwaste/${id}`,
+    UPDATE: (id) => `/collectedwaste/update/${id}`,
+    DELETE: (id) => `/collectedwaste/delete/${id}`,
   },
 
   // Recycle waste
   RECYCLE_WASTE: {
     BASE: "/recycleWaste",
-    GET_ALL: "/recycleWaste",
-    CREATE: "/recycleWaste",
+    GET_ALL: "/recycleWaste/allRecyclingWastes",
+    CREATE: "/recycleWaste/addRecyclingWastes",
     GET_BY_ID: (id) => `/recycleWaste/${id}`,
     UPDATE: (id) => `/recycleWaste/${id}`,
     DELETE: (id) => `/recycleWaste/${id}`,

@@ -4,6 +4,8 @@ import { withCsrf } from "./csrf";
 import WasteHeader from "./WasteHeader";
 import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
+import { getVehicles } from "../services/vehicleService";
+import { getApprovedPickups } from "../services/adminService";
 
 const RecycleForm = () => {
   // State to manage form data
@@ -26,16 +28,12 @@ const RecycleForm = () => {
     const fetchData = async () => {
       try {
         // Fetch truck numbers (assuming a field named "truckNo" in the "users" collection)
-        const vehiclesResponse = await axios.get(
-          "http://localhost:8070/api/vehicles/"
-        ); // Replace with your actual endpoint
+        const vehiclesResponse = await getVehicles();
         const truckNumbers = vehiclesResponse.data.map((user) => user.truckNo);
         setVehicles(truckNumbers);
 
         // Fetch locations (assuming a field named "location" in the "approvedpickups" collection)
-        const locationsResponse = await axios.get(
-          "http://localhost:8070/approvedpickup/getApprovedPickups"
-        ); // Replace with your actual endpoint
+        const locationsResponse = await getApprovedPickups();
         const locations = locationsResponse.data.map(
           (location) => location.location
         );
@@ -131,9 +129,7 @@ const RecycleForm = () => {
         formData,
         await withCsrf()
       );
-      console.log("Response from server:", response.data);
 
-      //alert('Data submitted successfully');
       navigate("/viewRecycledDetails");
 
       setFormData({
@@ -207,7 +203,6 @@ const RecycleForm = () => {
                   </option>
                 ))}
               </select>
-
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-700">

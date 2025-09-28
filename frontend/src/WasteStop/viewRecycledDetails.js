@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { withCsrf } from './csrf';
-import WasteHeader from './WasteHeader';
-import Button from '../components/Button';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { withCsrf } from "./csrf";
+import WasteHeader from "./WasteHeader";
+import Button from "../components/Button";
+import {
+  deleteReCycleWaste,
+  getReCycleWastes,
+  updateReCycleWaste,
+} from "../services/recycleWasteService";
 
 const ViewRecycledDetails = () => {
   const [wastes, setWastes] = useState([]);
@@ -12,10 +17,12 @@ const ViewRecycledDetails = () => {
   useEffect(() => {
     const fetchWastes = async () => {
       try {
-        const response = await axios.get('http://localhost:8070/recycleWaste/allRecyclingWastes');
-        setWastes(response.data);
+        const response = await getReCycleWastes();
+        // Make sure wastes is an array
+        const wastesArray = Array.isArray(response) ? response : response.data;
+        setWastes(wastesArray);
       } catch (error) {
-        console.error('Error fetching recycling wastes:', error);
+        console.error("Error fetching recycling wastes:", error);
       }
     };
     fetchWastes();
@@ -25,15 +32,12 @@ const ViewRecycledDetails = () => {
   // FIX: Add CSRF token to delete request to prevent 403 Forbidden error
   const handleDelete = async (recycleID) => {
     try {
-      await axios.delete(
-        `http://localhost:8070/recycleWaste/deleteRecyclingWaste/${recycleID}`,
-        await withCsrf()
-      );
-      setWastes(wastes.filter(waste => waste._id !== recycleID));
-      alert('Recycling waste deleted successfully');
+      await deleteReCycleWaste(recycleID);
+      setWastes(wastes.filter((waste) => waste._id !== recycleID));
+      alert("Recycling waste deleted successfully");
     } catch (error) {
-      console.error('Error deleting recycling waste:', error);
-      alert('Failed to delete waste');
+      console.error("Error deleting recycling waste:", error);
+      alert("Failed to delete waste");
     }
   };
 
@@ -48,17 +52,17 @@ const ViewRecycledDetails = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(
-        `http://localhost:8070/recycleWaste/updateRecyclingWaste/${editFormData._id}`,
-        editFormData,
-        await withCsrf()
+      await updateReCycleWaste(editFormData._id, editFormData);
+      setWastes(
+        wastes.map((waste) =>
+          waste._id === editFormData._id ? editFormData : waste
+        )
       );
-      setWastes(wastes.map((waste) => (waste._id === editFormData._id ? editFormData : waste)));
       setEditFormData(null);
-      alert('Waste data updated successfully');
+      alert("Waste data updated successfully");
     } catch (error) {
-      console.error('Error updating recycling waste:', error);
-      alert('Failed to update waste');
+      console.error("Error updating recycling waste:", error);
+      alert("Failed to update waste");
     }
   };
 
@@ -69,8 +73,7 @@ const ViewRecycledDetails = () => {
 
   return (
     <div className=" w-full  mx-auto p-6">
-      
-      <WasteHeader h1='Recycled Details'/>
+      <WasteHeader h1="Recycled Details" />
 
       {/* Display the list of recycling wastes */}
       <table className="table-auto w-full border-collapse">
@@ -186,10 +189,9 @@ const ViewRecycledDetails = () => {
           </form>
         </div>
       )}
-            <div className="  w-full bottom-0 z-10 bg-white border-t h-20 flex justify-between items-center px-5 lg:px-10">
+      <div className="  w-full bottom-0 z-10 bg-white border-t h-20 flex justify-between items-center px-5 lg:px-10">
         <Button Button1="Cancel" Button2="Record New" />
       </div>
-
     </div>
   );
 };

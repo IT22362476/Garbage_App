@@ -8,7 +8,7 @@ const { authenticateJWT, authorizeRoles } = require("../middlewares/jwtAuth");
 router.post(
   "/addCollectedWaste",
   authenticateJWT,
-  authorizeRoles("admin", "collector"),
+  authorizeRoles("admin", "collector", "recorder"),
   CollectedWasteController.addCollectedWaste
 );
 
@@ -26,7 +26,7 @@ router.get(
 router.get(
   "/:collectedId",
   authenticateJWT,
-  authorizeRoles("admin", "collector"),
+  authorizeRoles("admin", "collector", "recorder"),
   CollectedWasteController.getCollectedWasteById
 );
 
@@ -35,7 +35,7 @@ router.get(
 router.put(
   "/update/:collectedId",
   authenticateJWT,
-  authorizeRoles("admin", "collector"),
+  authorizeRoles("admin", "collector", "recorder"),
   CollectedWasteController.updateCollectedWaste
 );
 
@@ -44,7 +44,7 @@ router.put(
 router.delete(
   "/delete/:collectedId",
   authenticateJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "recorder"),
   CollectedWasteController.deleteCollectedWaste
 );
 

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom'; // Importing useLocation and useNavigate
-import { toast } from 'react-toastify'; // Importing toast for pop-up notifications
+import React, { useState } from "react";
+import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom"; // Importing useLocation and useNavigate
+import { toast } from "react-toastify"; // Importing toast for pop-up notifications
+import { CollectedWasteService } from "../services/collectedWasteService";
 
 function WasteCollectedUpdateForm() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { item } = location.state; // Getting the current item from state
+  const { item } = location.state;
 
   const [truckNumber, setTruckNumber] = useState(item.truckNumber);
   const [wasteCollector, setWasteCollector] = useState(item.wasteCollector);
@@ -25,17 +26,16 @@ function WasteCollectedUpdateForm() {
       paperWaste,
       foodWaste,
       polytheneWaste,
-      totalWaste
+      totalWaste,
     };
-    console.log(updatedWasteData); 
 
     try {
-      await axios.put(`http://localhost:8070/collectedwaste/update/${item._id}`, updatedWasteData);
-      toast.success('Record updated successfully!'); // Show success message
-      navigate('/collectedWaste'); // Navigate back to the table
+      await CollectedWasteService.updateWaste(item._id, updatedWasteData);
+      toast.success("Record updated successfully!");
+      navigate("/collectedWaste");
     } catch (error) {
-      console.error('Error updating record:', error);
-      toast.error('Failed to update record!'); // Show error message
+      console.error("Error updating record:", error);
+      toast.error("Failed to update record!");
     }
   };
 
@@ -106,7 +106,12 @@ function WasteCollectedUpdateForm() {
             className="border rounded w-full px-2 py-1"
           />
         </div>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Update
+        </button>
       </form>
     </div>
   );
