@@ -4,49 +4,47 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { AiOutlineUser } from "react-icons/ai"; // You can install this package for icons
 import { useAuth } from "../contexts/AuthContext";
+import api, { API_ENDPOINTS } from "../services/apiClient";
 
 const CollectorHome = () => {
   const [approvedPickups, setApprovedPickups] = useState([]);
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown visibility
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the approved pickups for the logged-in user
-    axios
-      .get(`http://localhost:8070/approvedpickup/getapproved/${user.id}`)
-      .then((response) => {
-        setApprovedPickups(response.data);
-      })
-      .catch((error) => {
-        console.error(
-          "There was an error fetching the approved pickups!",
-          error
+    if (!user?.id) return;
+
+    const fetchPickups = async () => {
+      try {
+        const response = await api.get(
+          API_ENDPOINTS.APPROVED_PICKUP.GET_BY_USER(user.id)
         );
-      });
-  }, [user.id]); // Ensure the effect runs when the user ID changes
+        setApprovedPickups(response.data);
+      } catch (error) {
+        console.error("Error fetching approved pickups:", error);
+      }
+    };
 
-  const handleCompletion = (index) => {
-    const updatedPickups = [...approvedPickups];
-    updatedPickups[index].status =
-      updatedPickups[index].status === "Completed" ? "Pending" : "Completed";
+    fetchPickups();
+  }, [user?.id]);
 
-    // Make an API call to update the status in the backend
-    axios
-      .post(
-        `http://localhost:8070/approvedpickup/update/${updatedPickups[index]._id}`,
-        {
-          status: updatedPickups[index].status,
-        }
-      )
-      .then((response) => {
-        console.log("Pickup status updated!", response);
-        setApprovedPickups(updatedPickups);
-      })
-      .catch((error) => {
-        console.error("There was an error updating the pickup status!", error);
+  const handleCompletion = async (index) => {
+    try {
+      const updatedPickups = [...approvedPickups];
+      const pickup = updatedPickups[index];
+
+      pickup.status = pickup.status === "Completed" ? "Pending" : "Completed";
+
+      await api.post(API_ENDPOINTS.APPROVED_PICKUP.UPDATE(pickup._id), {
+        status: pickup.status,
       });
+
+      setApprovedPickups(updatedPickups);
+    } catch (error) {
+      console.error("Error updating pickup status:", error);
+    }
   };
-  const navigate = useNavigate();
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);

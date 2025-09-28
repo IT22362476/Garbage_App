@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
+
       // 1. Call login API
       const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, {
         email,
@@ -46,8 +47,21 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: profileResponse.data };
     } catch (error) {
-      const errorMsg =
-        error.response?.data?.error || "Invalid credentials or network error";
+      let errorMsg = "Something went wrong. Please try again.";
+
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMsg = "Invalid email or password.";
+        } else if (error.response.status === 429) {
+          errorMsg =
+            "Too many login attempts. Please wait and try again later.";
+        } else {
+          errorMsg = error.response.data?.error || "Server error occurred.";
+        }
+      } else {
+        errorMsg = "Network error. Please check your connection.";
+      }
+
       return { success: false, error: errorMsg };
     } finally {
       setLoading(false);
