@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginWithGoogle = () => {
-    window.location.href = API_ENDPOINTS.AUTH.GOOGLE_AUTH;
+    window.location.href = "http://localhost:8070/auth/google";
   };
 
   const value = {
