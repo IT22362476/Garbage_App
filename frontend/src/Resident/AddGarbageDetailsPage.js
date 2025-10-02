@@ -11,7 +11,7 @@ function AddGarbageDetailsPage() {
   const [date, setDate] = useState("");
   const [payment, setPayment] = useState(0);
   const navigate = useNavigate();
-  const { user } = useAuth;
+  const { user } = useAuth();
   const userID = user?.id;
 
   useEffect(() => {

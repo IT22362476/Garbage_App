@@ -53,7 +53,7 @@ const PORT = process.env.PORT || 8070;
 // Session configuration for Passport
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your-session-secret",
+    secret: process.env.SESSION_SECRET || "session-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
