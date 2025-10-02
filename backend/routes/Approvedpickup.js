@@ -45,7 +45,6 @@ router
         { new: true }
       )
         .then((updatedPickup) => {
-          console.log("Updated pickup:", updatedPickup);
           res.json(updatedPickup);
         })
         .catch((err) => {
@@ -62,7 +61,6 @@ router
         { new: true }
       )
         .then((updatedPickup) => {
-          console.log("Updated pickup:", updatedPickup); // Log the updated document
           res.json(updatedPickup);
         })
         .catch((err) => {
@@ -109,7 +107,6 @@ router.route("/update/:id").post((req, res) => {
     { new: true }
   )
     .then((updatedPickup) => {
-      console.log("Updated pickup:", updatedPickup); // Log the updated document
       res.json(updatedPickup);
     })
     .catch((err) => {

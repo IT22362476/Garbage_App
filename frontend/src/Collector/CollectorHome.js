@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { AiOutlineUser } from "react-icons/ai"; // You can install this package for icons
@@ -18,14 +17,13 @@ const CollectorHome = () => {
     const fetchPickups = async () => {
       try {
         const response = await api.get(
-          API_ENDPOINTS.APPROVED_PICKUP.GET_BY_USER(user.id)
+          API_ENDPOINTS.APPROVED_PICKUP.GET_APPROVED(user.id)
         );
         setApprovedPickups(response.data);
       } catch (error) {
         console.error("Error fetching approved pickups:", error);
       }
     };
-
     fetchPickups();
   }, [user?.id]);
 

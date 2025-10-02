@@ -94,19 +94,19 @@ const RecycleForm = () => {
     }
 
     // Validate paperWaste, foodWaste, polytheneWaste (whole numbers)
-    const wasteRegex = /^[0-9]+$/;
-    if (!wasteRegex.test(formData.paperWaste) || formData.paperWaste === "") {
-      newErrors.paperWaste = "Paper waste must be a whole number.";
-    }
-    if (!wasteRegex.test(formData.foodWaste) || formData.foodWaste === "") {
-      newErrors.foodWaste = "Food waste must be a whole number.";
-    }
-    if (
-      !wasteRegex.test(formData.polytheneWaste) ||
-      formData.polytheneWaste === ""
-    ) {
-      newErrors.polytheneWaste = "Polythene waste must be a whole number.";
-    }
+    // const wasteRegex = /^[0-9]+$/;
+    // if (!wasteRegex.test(formData.paperWaste) || formData.paperWaste === "") {
+    //   newErrors.paperWaste = "Paper waste must be a whole number.";
+    // }
+    // if (!wasteRegex.test(formData.foodWaste) || formData.foodWaste === "") {
+    //   newErrors.foodWaste = "Food waste must be a whole number.";
+    // }
+    // if (
+    //   !wasteRegex.test(formData.polytheneWaste) ||
+    //   formData.polytheneWaste === ""
+    // ) {
+    //   newErrors.polytheneWaste = "Polythene waste must be a whole number.";
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Return true if no errors
@@ -151,12 +151,6 @@ const RecycleForm = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-2 font-semibold">Truck Number:</label>
-              <input
-                name="truckNumber"
-                value={formData.truckNumber}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded"
-              />
               <select
                 name="truckNumber"
                 value={formData.truckNumber}
@@ -173,16 +167,6 @@ const RecycleForm = () => {
             </div>
             <div>
               <label className="block mb-2 font-semibold">Area:</label>
-              <input
-                name="area"
-                value={formData.area}
-                onChange={handleChange}
-                className={`w-full p-2 border border-gray-300 rounded ${
-                  errors.area ? "border-red-500" : ""
-                }`}
-              />
-              {errors.area && <p className="text-red-500">{errors.area}</p>}
-
               <select
                 name="area"
                 value={formData.area}

@@ -193,8 +193,8 @@ export const API_ENDPOINTS = {
     ADD: "/approvedpickup/add",
     GET_ALL: "/approvedpickup/getAll",
     GET_BY_ID: (id) => `/approvedpickup/${id}`,
-    UPDATE: (id) => `/approvedpickup/${id}`,
-    DELETE: (id) => `/approvedpickup/${id}`,
+    GET_APPROVED: (id) => `/approvedpickup/getapproved/${id}`,
+    UPDATE: (id) => `/approvedpickup/update/${id}`,
   },
 
   // Vehicle management
@@ -230,9 +230,9 @@ export const API_ENDPOINTS = {
     BASE: "/recycleWaste",
     GET_ALL: "/recycleWaste/allRecyclingWastes",
     CREATE: "/recycleWaste/addRecyclingWastes",
-    GET_BY_ID: (id) => `/recycleWaste/${id}`,
-    UPDATE: (id) => `/recycleWaste/${id}`,
-    DELETE: (id) => `/recycleWaste/${id}`,
+    GET_BY_ID: (id) => `/recycleWaste/getRecyclingWaste/${id}`,
+    UPDATE: (id) => `/recycleWaste/updateRecyclingWaste/${id}`,
+    DELETE: (id) => `/recycleWaste/deleteRecyclingWaste/${id}`,
   },
 
   // Total garbage

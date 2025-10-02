@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getVehicles } from "../services/vehicleService";
 import { toast } from "react-toastify";
 import { getApprovedPickupsEndpoint } from "../services/adminService";
+import api from "../services/apiClient";
 
 const WasteCollectedForm = () => {
   const navigate = useNavigate();
@@ -34,12 +35,16 @@ const WasteCollectedForm = () => {
         );
         setLocations(locations);
 
-        const collectorResponse = await axios.get(
-          "http://localhost:8070/user/"
-        );
-        const collectors = collectorResponse.data
+        const collectorResponse = await api.get("/user");
+
+        // Merge all user arrays into one big array
+        const allUsers = Object.values(collectorResponse.data).flat();
+
+        // Now filter collectors
+        const collectors = allUsers
           .filter((user) => user.role === "collector")
           .map((collector) => collector.name);
+
         setCollectors(collectors);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -95,6 +100,7 @@ const WasteCollectedForm = () => {
 
     // Validate the form before submitting
     if (!validateForm()) {
+      console.log("Validation failed:", errors);
       return; // Exit if there are validation errors
     }
 
@@ -178,11 +184,13 @@ const WasteCollectedForm = () => {
               />
             </div> */}
 
-            {/* <div>
-              <label className="block mb-1 font-semibold">Waste Collector:</label>
+            <div>
+              <label className="block mb-1 font-semibold">
+                Waste Collector:
+              </label>
               <select
-                name="collector"
-                value={formData.collector}
+                name="wasteCollector"
+                value={formData.wasteCollector}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded"
               >
@@ -193,9 +201,9 @@ const WasteCollectedForm = () => {
                   </option>
                 ))}
               </select>
-            </div>  */}
+            </div>
 
-            <div>
+            {/* <div>
               <label className="block mb-1 font-semibold">
                 Waste Collector:
               </label>
@@ -211,7 +219,7 @@ const WasteCollectedForm = () => {
               {errors.wasteCollector && (
                 <p className="text-red-500">{errors.wasteCollector}</p>
               )}
-            </div>
+            </div> */}
 
             {/* <div>
               <label className="block mb-1 font-semibold">Area:</label>
