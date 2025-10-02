@@ -58,10 +58,16 @@ router.post(
     try {
       const user = await User.findOne({ email });
       if (!user) {
+        res.logSecurityEvent(
+          `Failed login attempt for non-existent email: ${email}, IP: ${req.ip}`
+        );
         return res.status(401).json({ error: "Not Registered, re-register" });
       }
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
+        res.logSecurityEvent(
+          `Failed login attempt for email: ${email}, IP: ${req.ip}`
+        );
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
@@ -99,6 +105,9 @@ router.post(
       });
     } catch (err) {
       console.error(err);
+      res.logSecurityEvent(
+        `Error logging in for email: ${email}, IP: ${req.ip}`
+      );
       res.status(500).json({ error: "Error logging in" });
     }
   }
@@ -200,6 +209,9 @@ router.post(
       if (err.code === 11000) {
         return res.status(400).json({ error: "Email already exists" });
       }
+      res.logSecurityEvent(
+        `Error registering user for email: ${email}, IP: ${req.ip}`
+      );
       console.error(err);
       res.status(500).json({ error: "Error registering user" });
     }
