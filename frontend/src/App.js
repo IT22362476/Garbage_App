@@ -79,7 +79,7 @@ function App() {
             {/* Collector-only routes */}
             <Route element={<ProtectedRoute requiredRole="collector" />}>
               <Route path="/CollectorHome/:userID" element={<CollectorHome />} />
-              <Route path="/TotalGarbage" element={<TotalGarbage />} />
+              <Route path="/TotalGarbage/:userID" element={<TotalGarbage />} />
               <Route path="/Profile/:userID" element={<Profile />} />
             </Route>
 

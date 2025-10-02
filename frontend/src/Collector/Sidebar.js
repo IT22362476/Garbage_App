@@ -37,7 +37,7 @@ const Sidebar = () => {
           </li>
           <li className="mb-4">
             <Link
-              to="/TotalGarbage"
+              to={`/TotalGarbage/${userId}`}
               className="block py-2 px-6 hover:bg-green-600"
             >
               Total Garbage

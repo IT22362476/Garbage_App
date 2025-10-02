@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { AiOutlineUser } from "react-icons/ai"; // You can install this package for icons
 import { useAuth } from "../contexts/AuthContext";
+import { withCsrf } from "../WasteStop/csrf";
 
 const CollectorHome = () => {
   const [approvedPickups, setApprovedPickups] = useState([]);
@@ -25,27 +26,32 @@ const CollectorHome = () => {
       });
   }, [user.id]); // Ensure the effect runs when the user ID changes
 
-  const handleCompletion = (index) => {
+  const handleCompletion = async (index) => {
     const updatedPickups = [...approvedPickups];
     updatedPickups[index].status =
       updatedPickups[index].status === "Completed" ? "Pending" : "Completed";
 
-    // Make an API call to update the status in the backend
-    axios
-      .post(
-        `http://localhost:8070/approvedpickup/update/${updatedPickups[index]._id}`,
-        {
-          status: updatedPickups[index].status,
-        }
-      )
-      .then((response) => {
-        console.log("Pickup status updated!", response);
-        setApprovedPickups(updatedPickups);
-      })
-      .catch((error) => {
-        console.error("There was an error updating the pickup status!", error);
+    try {
+      // Attach CSRF token + credentials
+      const config = await withCsrf({
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+
+      const response = await axios.post(
+        `http://localhost:8070/approvedpickup/update/${updatedPickups[index]._id}`,
+        { status: updatedPickups[index].status },
+        config
+      );
+
+      console.log("Pickup status updated!", response);
+      setApprovedPickups(updatedPickups);
+    } catch (error) {
+      console.error("There was an error updating the pickup status!", error);
+    }
   };
+
   const navigate = useNavigate();
 
   const toggleDropdown = () => {

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useCookies } from 'react-cookie';
 import Sidebar from './Sidebar';  // Import Sidebar
+import { useAuth } from '../contexts/AuthContext';
+import { withCsrf } from '../WasteStop/csrf';
 
 const TotalGarbage = () => {
   const [totalGarbage, setTotalGarbage] = useState({
@@ -11,11 +13,18 @@ const TotalGarbage = () => {
     plastic: 0,
     steel: 0,
   });
+
+  const { user, logout } = useAuth();
+
+  const userId = user.id || "";
+
+
   const [cookies] = useCookies(['userID']); // Get userID from cookies
+  console.log('UserID from cookies:', cookies.userID);
 
   useEffect(() => {
     // Fetch garbage details for completed pickups for the logged-in user
-    axios.get(`http://localhost:8070/garbage/completed-garbage?userId=${cookies.userID}`)
+    axios.get(`http://localhost:8070/garbage/completed-garbage?userId=${userId}`)
       .then((response) => {
         calculateTotals(response.data);
       })
@@ -61,22 +70,31 @@ const TotalGarbage = () => {
   };
 
   // Function to report summary
-  const reportSummary = () => {
+  const reportSummary = async () => {
     const summaryData = {
       userId: cookies.userID,
       totals: totalGarbage,
     };
 
-    axios.post('http://localhost:8070/totalgarbage/total-garbages', summaryData)
-      .then((response) => {
-        alert('Reported successfully!'); 
-        console.log('Summary reported successfully!', response.data);
-        // You can add a success message or notification here
-      })
-      .catch((error) => {
-        console.error('There was an error reporting the summary!', error);
-        // Handle error case
+    try {
+      // Get config with CSRF token
+      const config = await withCsrf({
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+
+      const response = await axios.post(
+        "http://localhost:8070/totalgarbage/total-garbages",
+        summaryData,
+        config
+      );
+
+      alert("Reported successfully!");
+      console.log("Summary reported successfully!", response.data);
+    } catch (error) {
+      console.error("There was an error reporting the summary!", error);
+    }
   };
 
   return (
