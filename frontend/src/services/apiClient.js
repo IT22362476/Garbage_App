@@ -6,7 +6,7 @@ import { getCsrfToken, clearCsrfToken } from "./csrf";
 // Configuration
 const API_CONFIG = {
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:8070",
-  timeout: 10000, // 10 seconds
+  timeout: 90000, // 10 seconds
   withCredentials: true,
 };
 
